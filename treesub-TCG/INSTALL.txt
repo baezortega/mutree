@@ -1,0 +1,7 @@
+INSTALL TREESUB-TCG
+
+This is only necessary if the dist/treesub.jar file is not present
+
+Move into the treesub-TCG folder using 'cd' and compile the code using ANT:
+
+export ANT_OPTS="-Xmx256m"; ant compile jar

@@ -1,0 +1,467 @@
+#!/bin/bash
+
+
+#
+# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE CONSTRUCTION AND IDENTIFICATION OF RECURRENT MUTATIONS
+#
+# Adrian Baez-Ortega (ab2324@cam.ac.uk)
+# Transmissible Cancer Group, University of Cambridge
+# 2016
+#
+
+
+# muttree: Core script
+# Last update: 2016/08/16
+
+
+# INPUT
+# -i: Input FASTA nucleotide sequence file (one sequence per sample)
+# -g: Gene table as a tab-delimited text file with two columns:
+#      i)  Gene name
+#      ii) Start position in the input sequence
+# -c: Number of RAxML threads (CPUs) [optional]
+# -o: Output folder
+
+
+
+VERSION=1.0
+SRCDIR="${BASH_SOURCE%/*}"
+TREESUB="${SRCDIR%/*}"/treesub-TCG
+RAXMLDEF="-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730"
+
+
+
+####################################### FUNCTIONS #######################################
+
+# AUXILIARY FUNCTIONS
+# print_help()
+# Prints a help guide if -h, or no arguments, are input
+print_help() {
+    echo
+    echo
+    echo "| MUTTREE"
+    echo "| A pipeline for phylogenetic tree construction and identification of recurrent mutations"
+    echo "| Version $VERSION"
+    echo "|"    
+    echo "| Required input:"
+    echo "|    -i  Full path to the input nucleotide FASTA file"
+    echo "|         (one coding sequence per sample, without stop codons; first sample will be the reference)"
+    echo "|    -g  Full path to the gene table, defined as a tab-delimited file with two columns:"
+    echo "|          i) Gene symbol"
+    echo "|         ii) Start position in the input sequence"
+    echo "|    -o  Full path to the output folder (it will be created if needed)"
+    echo "|"
+    echo "| Optional input:"
+    echo "|    -t  Number of RAxML threads (CPUs)"
+    echo "|    -r  Custom options for RAxML (within quotes, all necessary options except -s, -n, -w and -T)"
+    echo "|    -p  Full path to a custom control file for the PAML baseml command"
+    echo "|         (do not include variables seqfile, treefile or outfile)"
+    echo "|"
+    echo "| Options:"
+    echo "|    -h  Print this usage information and exit"
+    echo "|    -v  Print version and exit"
+    echo "|"
+    echo "| Usage:"
+    echo "|    muttree -i /path/to/seqs.fna -o /path/to/out_dir -g /path/to/gene_table.txt -t 8 -r \"-m GTRGAMMA -# 10 -p 12345\" -p /path/to/baseml.ctl"
+    echo
+    echo
+}
+
+
+# check_file()
+# Checks if a file exists and is not empty. In that case, it displays an error message and exits
+# Used for checking the output of each step
+check_file() {
+
+    if [ ! -s $1 ]; then
+        echo -e "\nERROR: Output file $1 was not correctly generated. Please check the logs folder for more information.\n" >&2
+        exit 1
+    fi
+    
+}
+
+
+
+# PIPELINE STEPS
+# 1) process_seqs()
+# Uses treesub to create input PHYLIP files for RAxML and PAML
+process_seqs() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/1_process_seqs
+
+    # Create a link to the input file, named 'alignment', for compatibility with treesub
+    ln -s $SEQS $OUTDIR/1_process_seqs/alignment
+
+    # Run treesub's FASTAConverter
+    echo -e "\n    Log file in $OUTDIR/logs/1_process_seqs.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.alignment.FASTAConverter $OUTDIR/1_process_seqs &> $OUTDIR/logs/1_process_seqs.log
+    
+}
+
+
+# 2) run_raxml()
+# Uses RAxML to produce a maximum likelihood tree and bootstrap support values (by default)
+run_raxml() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/2_run_raxml
+    mkdir -p $OUTDIR/Output
+    
+    # Include parameter -T depending on number of CPUs
+    if [ $CPUS -gt 1 ]; then
+        THREADS="-T $CPUS"
+    else
+        THREADS=""
+    fi
+    
+    # Use custom options if provided
+    if [ "$RAXMLOPT" != "no" ]; then
+        echo -e "\n    Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
+        echo -e "    Log file in $OUTDIR/logs/2_run_raxml.log"
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_run_raxml $THREADS $RAXMLOPT &> $OUTDIR/logs/2_run_raxml.log
+    else
+        echo -e "\n    Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
+        echo -e "    Log file in $OUTDIR/logs/2_run_raxml.log"
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_run_raxml $THREADS $RAXMLDEF &> $OUTDIR/logs/2_run_raxml.log
+    fi
+
+}
+
+
+# 3) root_tree()
+# Uses treesub to root the ML tree using the reference sequence provided
+root_tree() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/3_root_tree
+    
+    # Run treesub
+    echo -e "\n    Log file in $OUTDIR/logs/3_root_tree.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_run_raxml/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted &> $OUTDIR/logs/3_root_tree.log
+
+}
+
+
+# 4) run_paml()
+# Uses PAML baseml command to perform ancestral sequence reconstruction on the ML tree
+run_paml() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/4_run_paml
+    
+    # Copy baseml control file and replace output directory path
+    cp $TREESUB/resources/baseml.first.ctl $OUTDIR/4_run_paml/baseml.ctl
+    sed -i "s:OUTDIR:$OUTDIR:g" $OUTDIR/4_run_paml/baseml.ctl
+    
+    if [ "$PAMLCTL" != "no" ]; then
+        echo -e "\n    Running PAML's baseml using custom control file: $PAMLCTL"
+        cat $PAMLCTL >> $OUTDIR/4_run_paml/baseml.ctl
+    else
+        echo -e "\n    Running PAML's baseml using default control file: $OUTDIR/4_run_paml/baseml.ctl"
+        cat $TREESUB/resources/baseml.second.ctl >> $OUTDIR/4_run_paml/baseml.ctl
+    fi
+        
+    # Run baseml
+    echo -e "    Log file in $OUTDIR/logs/4_run_paml.log"
+    baseml $OUTDIR/4_run_paml/baseml.ctl &> $OUTDIR/logs/4_run_paml.log
+    
+    # Move results to the output folder
+    mv -t $OUTDIR/4_run_paml/ $OUTDIR/2base.t $OUTDIR/in.basemlg $OUTDIR/lnf $OUTDIR/rates $OUTDIR/rst $OUTDIR/rst1 $OUTDIR/rub &> /dev/null
+
+}
+
+
+# 5) annotate_tree()
+# Uses treesub to annotate the mutations in each branch of the tree
+annotate_tree() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/5_annotate_tree
+    
+    # Run treesub
+    echo -e "\n    Log file in $OUTDIR/logs/5_annotate_tree.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_run_paml $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+
+}
+
+
+# 6) find_recurrent()
+# Uses Muttree_findRecurrent.py to remap mutation positions to their actual protein coordinates
+# and identify recurrent mutations
+find_recurrent() {
+
+    # Create directory for output files
+    mkdir -p $OUTDIR/Output
+    
+    # Run Muttree_findRecurrent.py
+    echo -e "\n    Log file in $OUTDIR/logs/6_find_recurrent.log"
+    Muttree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/Output &> $OUTDIR/logs/6_find_recurrent.log
+
+}
+
+
+################################### END OF FUNCTIONS ####################################
+
+
+
+# If no arguments (or -h): print help
+if [ "$#" -eq 0 ]; then
+    print_help
+    exit 0
+fi
+
+
+# Parse input
+SEQS=""
+GENES=""
+OUTDIR=""
+RAXMLOPT="no"
+PAMLCTL="no"
+CPUS=1
+while getopts ":i:o:g:t:r:p:hv?" OPT; do
+  case $OPT in
+    i)
+      SEQS=$OPTARG
+      ;;
+    o)
+      OUTDIR=$OPTARG
+      ;;
+    g)
+      GENES=$OPTARG
+      ;;
+    t)
+      CPUS=$OPTARG
+      ;;
+    r)
+      RAXMLOPT=$OPTARG
+      ;;
+    p)
+      PAMLCTL=$OPTARG
+      ;;
+    h)
+      print_help
+      exit 0
+      ;;
+    v)
+      echo "muttree $VERSION"
+      exit 0
+      ;;
+    \?)
+      print_help
+      echo -e "Invalid option: -$OPTARG\n" >&2
+      exit 1
+      ;;
+  esac
+done
+
+
+# Check that all mandatory inputs are present
+if [ -z "$SEQS" ]; then
+   print_help
+   echo -e "Input nucleotide sequence FASTA file (-i) is required\n" >&2
+   exit 1
+fi
+
+if [ -z "$GENES" ]; then
+   print_help
+   echo -e "Input gene table file (-g) is required\n" >&2
+   exit 1
+fi
+
+if [ -z "$OUTDIR" ]; then
+   print_help
+   echo -e "Path to output folder (-o) is required\n" >&2
+   exit 1
+fi
+
+
+# Sanity checks 
+# Check that: Input files exist; PAML custom options are valid; RAxML custom options are valid; CPUS >0
+if [ ! -s $SEQS ]; then
+    echo -e "\nERROR: Input sequence FASTA file not found or empty. Please check the path.\n" >&2
+    exit 1
+fi
+
+if [ ! -s $GENES ]; then
+    echo -e "\nERROR: Gene table file not found or empty. Please check the path.\n" >&2
+    exit 1
+fi
+
+if [ "$PAMLCTL" != "no" ] && [ ! -s $PAMLCTL ]; then
+    echo -e "\nERROR: PAML baseml control file not found or empty. Please check the path.\n" >&2
+    exit 1
+fi
+
+if [ "$RAXMLOPT" != "no" ] && echo "$RAXMLOPT" | grep -q -E " \-s | \-n | \-w | \-T "; then
+    echo -e "\nERROR: Custom RAxML options cannot include -s, -n, -w or -T.\n" >&2
+    exit 1
+fi
+
+if  [ "$PAMLCTL" != "no" ] && [ ! -s $PAMLCTL ]; then
+    echo -e "\nERROR: PAML baseml control file not found or empty. Please check the path.\n" >&2
+    exit 1
+fi
+
+if  [ "$PAMLCTL" != "no" ] && grep -q -E "seqfile =|treefile =|outfile =" $PAMLCTL; then 
+    echo -e "\nERROR: Custom PAML control file cannot include variables seqfile, treefile or outfile.\n" >&2
+    exit 1
+fi
+
+if ! [[ $CPUS =~ ^[1-9]+[0-9]*$ ]]; then
+    echo -e "\nERROR: Number of CPUs must be greater than 0\n" >&2
+    exit 1
+fi
+
+
+# Choose RAxML version to use depending on number of CPUs
+if [ $CPUS -gt 1 ]; then
+    RAXML="raxmlHPC-PTHREADS-SSE3"
+else
+    RAXML="raxmlHPC-SSE3"
+fi
+
+
+# Check that dependencies (RAxML, PAML, Java) are installed
+which $RAXML > /dev/null || { echo -e "\nERROR: $RAXML: command not found. Please install $RAXML and add its directory to your PATH.\n" >&2; exit 1; }
+which baseml > /dev/null || { echo -e "\nERROR: baseml: command not found. Please install PAML and add its directory to your PATH.\n" >&2; exit 1; }    
+which java >/dev/null || { echo -e "\nERROR: java: command not found. Please install a Java runtime (1.6+) and add its directory to your PATH.\n" >&2; exit 1; }
+which Muttree_findRecurrent.py >/dev/null || { echo -e "\nERROR: muttree directory not included in the PATH. Please add the muttree/src directory to your PATH environment variable.\n" >&2; exit 1; }
+
+
+
+# START RUNNING
+# Copy all standard out and standard error to log file
+mkdir -p $OUTDIR/logs
+exec &> >(tee -ia $OUTDIR/logs/muttree_`date +"%y%m%d%H%M"`.log)
+
+echo -e "\nThis is muttree $VERSION\n"
+
+echo "Input sequence FASTA:     $SEQS"
+echo "Input gene table:         $GENES"
+echo "Custom RAXML options:     $RAXMLOPT"
+echo "Custom PAML control file: $PAMLCTL"
+echo "Number of CPUs to use:    $CPUS"
+echo "Output directory:         $OUTDIR"
+
+
+# Check if there is a checkpoint file from a previous run in the output folder
+STEP=0
+if [ -s $OUTDIR/logs/CHECKPOINT ]; then
+    CHK=`tail -1 $OUTDIR/logs/CHECKPOINT`
+    STEP=`echo $CHK | cut -f1 -d" "`
+    STEPNAME=`echo $CHK | cut -f2 -d" "`
+    echo -e "\n*CHECKPOINT FILE FOUND*"
+    echo "Resuming execution after last completed step: $STEPNAME"
+fi
+
+
+echo -e "\nExecution started on `date`\n"
+
+
+# Each step is performed only if its index is higher than STEP (last finished step index)
+# 1. PROCESS INPUT SEQUENCE FILE
+if [ "$STEP" -lt 1 ]; then
+
+    echo -e "\n(1) PROCESSING INPUT SEQUENCE FILE"
+    process_seqs
+    
+    # Check successful execution
+    check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip
+    check_file $OUTDIR/1_process_seqs/alignment.paml.phylip
+
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "1 process_seqs" >> $OUTDIR/logs/CHECKPOINT
+    
+fi
+
+
+# 2. RUN RAXML TO GENERATE A MAXIMUM LIKELIHOOD TREE
+if [ "$STEP" -lt 2 ]; then
+
+    echo -e "\n(2) CONSTRUCTING A MAXIMUM LIKELIHOOD TREE"
+    run_raxml
+    
+    # Check successful execution
+    check_file $OUTDIR/2_run_raxml/RAxML_bestTree.RECON
+    
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "2 run_raxml" >> $OUTDIR/logs/CHECKPOINT
+
+fi
+
+
+# 3. ROOT THE RAXML ML TREE USING THE REFERENCE SEQUENCE
+if [ "$STEP" -lt 3 ]; then
+
+    echo -e "\n(3) ROOTING THE MAXIMUM LIKELIHOOD TREE AT THE REFERENCE SEQUENCE"
+    root_tree
+    
+    # Check successful execution
+    check_file $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
+    
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "3 root_tree" >> $OUTDIR/logs/CHECKPOINT
+
+fi
+
+
+# 4. RUN PAML TO PERFORM ANCESTRAL SEQUENCE RECONSTRUCTION
+if [ "$STEP" -lt 4 ]; then
+
+    echo -e "\n(4) PERFORMING ANCESTRAL SEQUENCE RECONSTRUCTION"
+    run_paml
+    
+    # Check successful execution
+    grep -q "List of extant and reconstructed sequences" $OUTDIR/4_run_paml/rst || { echo -e "\nERROR: Output file $OUTDIR/4_run_paml/rst is incomplete. Please check the logs folder for more information.\n" >&2; exit 1; }
+    
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "4 run_paml" >> $OUTDIR/logs/CHECKPOINT
+
+fi
+
+
+# 5. ANNOTATE MUTATIONS IN EACH TREE BRANCH
+if [ "$STEP" -lt 5 ]; then
+
+    echo -e "\n(5) ANNOTATING MUTATIONS IN EACH TREE BRANCH"
+    annotate_tree
+    
+    # Check successful execution
+    check_file $OUTDIR/5_annotate_tree/substitutions.tree
+    check_file $OUTDIR/5_annotate_tree/substitutions.tsv
+    
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "5 annotate_tree" >> $OUTDIR/logs/CHECKPOINT
+
+fi
+
+
+# 6. IDENTIFY RECURRENT MUTATIONS
+if [ "$STEP" -lt 6 ]; then
+
+    echo -e "\n(6) IDENTIFYING RECURRENT MUTATIONS"
+    find_recurrent
+    
+    # Check successful execution
+    check_file $OUTDIR/Output/Muttree_Substitutions.tsv
+    check_file $OUTDIR/Output/Muttree_Substitutions.tree
+    check_file $OUTDIR/Output/Muttree_Recurrent_Substitutions.tree
+    
+    # Update checkpoint file
+    echo -e "    Success"
+    echo "6 find_recurrent" >> $OUTDIR/logs/CHECKPOINT
+
+fi
+
+
+echo -e "\n\nExecution finished on `date`"
+
+echo -e "\nALL DONE!"
+echo -e "Output is in: $OUTDIR/Output\n"
+
