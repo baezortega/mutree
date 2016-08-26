@@ -12,7 +12,7 @@ Adrian Baez-Ortega
 
 Transmissible Cancer Group, University of Cambridge
 
-Muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline, which makes use of the tools [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1], [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) [2] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [3] and [BioJava](http://biojava.org/) [4]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from nucleotide sequence alignment data.
+Muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of the tools [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1], [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) [2] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [3] and [BioJava](http://biojava.org/) [4]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from nucleotide sequence alignment data.
 
 The pipeline generates:
 
@@ -265,6 +265,6 @@ You should have received a copy of the GNU General Public License along with thi
 
 2. Yang, Z. 2007. PAML 4: Phylogenetic Analysis by Maximum Likelihood. _Molecular Biology and Evolution_ 24: 1586-1591.
 
-3. Drummond, A., and K. Strimmer. 2001. PAL: An object-oriented programming library for molecular evolution and phylogenetics. _Bioinformatics_ 17: 662-663.
+3. Drummond, A., Strimmer, K. 2001. PAL: An object-oriented programming library for molecular evolution and phylogenetics. _Bioinformatics_ 17: 662-663.
 
-4. R.C.G. Holland; T. Down; M. Pocock; A. Prlić; D. Huen; K. James; S. Foisy; A. Dräger; A. Yates; M. Heuer; M.J. Schreiber. 2008. BioJava: an Open-Source Framework for Bioinformatics. _Bioinformatics_ 24 (18): 2096-2097.
+4. Holland, R.C.G., Down, T., Pocock, M., Prlić, A., Huen, D., James, K., Foisy, S., Dräger, A., Yates, A., Heuer, M., Schreiber, M.J. 2008. BioJava: an Open-Source Framework for Bioinformatics. _Bioinformatics_ 24(18): 2096-2097.
