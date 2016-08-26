@@ -9,6 +9,7 @@ muttree
 ### A pipeline for phylogenetic tree construction and identification of recurrent mutations
 
 Adrian Baez-Ortega
+
 Transmissible Cancer Group, University of Cambridge
 
 Muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline, which makes use of the tools [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1], [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) [2] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [3] and [BioJava](http://biojava.org/) [4]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from nucleotide sequence alignment data.
@@ -23,7 +24,7 @@ The pipeline generates:
 
 * A version of the tree showing only the recurrent mutations in the branches where they occur.
 
-The output tree files can be opened with using [FigTree](http://tree.bio.ed.ac.uk/software/figtree/) (although they may be compatible with other tools).
+The output tree files can be visualized with using [FigTree](http://tree.bio.ed.ac.uk/software/figtree/) (although they may be compatible with other tools).
 
 Muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It has not been tested on Mac or Windows systems, but it might work with an appropriate bash shell.
 
@@ -39,11 +40,11 @@ Muttree depends on the installation of the following software:
 
 * __PAML__, which can be downloaded from [Ziheng Yang's website](http://abacus.gene.ucl.ac.uk/software/paml.html).
 
-* A recent __Java__ runtime (1.6+), which can be downloaded from the [Java website](https://www.java.com), although it is probably already installed in your system.
+* A recent __Java__ runtime (1.6+), which can be downloaded from the [Java website](https://www.java.com) (although it may be already installed in your system).
 
-* __Figtree__, which can be downloaded from [Andrew Rambaut's website](http://tree.bio.ed.ac.uk/software/figtree/), is the recommended way of visualising the output trees.
+* __FigTree__, which can be downloaded from [Andrew Rambaut's website](http://tree.bio.ed.ac.uk/software/figtree/), is the recommended way of visualizing the output trees.
 
-Muttree already includes its own (slightly altered) version of the treesub pipeline, in the folder 'treesub-TCG'. Therefore, installation of treesub is not necessary, although it may be needed to re-compile it (see below).
+Muttree already includes its own (slightly customized) version of the treesub pipeline, in the folder 'treesub-TCG'. Therefore, installation of treesub is not necessary, although it may be needed to re-compile it (see below).
 
 The following instructions describe the steps for installing muttree and all its components in an Ubuntu 14.04.4 system; they should be valid for any Ubuntu or Debian Linux distribution. All of these tools have available Mac and Windows versions (please consult their respective websites). Muttree itself has not been tested on Mac or Windows systems, but it might work with an appropriate bash shell.
 
@@ -67,11 +68,11 @@ The following instructions describe the steps for installing muttree and all its
         make -f Makefile.SSE3.PTHREADS.gcc
         rm *.o
 
-    Edit your ~/.bashrc file using:
+    Then, edit your ~/.bashrc file using:
 
         nano ~/.bashrc
 
-    and append the standard-RAxML-8.2.9 directory at the end of your PATH variable. If the PATH variable is not defined, you can define it by adding the following line at the end of the .bashrc file:
+    and append the 'standard-RAxML-8.2.9' directory at the end of your PATH variable. If the PATH variable is not defined, you can define it by adding the following line at the end of the .bashrc file:
 
         export PATH=~/Software/standard-RAxML-8.2.9:$PATH
 
@@ -96,11 +97,11 @@ The following instructions describe the steps for installing muttree and all its
         rm *.o
         mv baseml basemlg codeml pamp evolver yn00 chi2 ../bin
 
-    Edit your ~/.bashrc file using:
+    Then, edit your ~/.bashrc file using:
 
         nano ~/.bashrc
 
-    and append the paml4.9b/bin directory at the end of your PATH variable. If the PATH variable was not defined before, now its line should look like:
+    and append the 'paml4.9b/bin' directory at the end of your PATH variable. If the PATH variable was not defined before, now its line should look like:
 
         export PATH=~/Software/standard-RAxML-8.2.9:~/Software/paml4.9b/bin:$PATH
 
@@ -122,9 +123,9 @@ The following instructions describe the steps for installing muttree and all its
 
     The system will ask for your password; you need to have administrator permissions in your system in order to use `sudo apt-get install`.
 
- 5. __Install muttree_
+ 5. __Install muttree__
 
-    Go to the desired installation folder, and download the muttree repository:
+    Go to the desired installation folder, and download and uncompress muttree:
 
         cd ~/Software
 
@@ -132,11 +133,11 @@ The following instructions describe the steps for installing muttree and all its
         tar zxvf v1.0.tar.gz
         rm v1.0.tar.gz
 
-    Edit your ~/.bashrc file using:
+    Then, edit your ~/.bashrc file using:
 
         nano ~/.bashrc
 
-    and append the muttree-1.0/src directory at the end of your PATH variable. If the PATH variable was not defined, not its line should look like:
+    and append the 'muttree-1.0/src' directory at the end of your PATH variable. If the PATH variable was not defined, not its line should look like:
 
         export PATH=~/Software/standard-RAxML-8.2.9:~/Software/paml4.9b/bin:~/Software/muttree-1.0/src:$PATH
 
@@ -146,7 +147,7 @@ The following instructions describe the steps for installing muttree and all its
 
         source ~/.bashrc
 
-    Then you should be able to run the following commands, which should print something like these:
+    Then you should be able to run the following commands, which should print something like this:
 
         which raxmlHPC-PTHREADS-SSE3  # prints: [...]/standard-RAxML-8.2.9/raxmlHPC-PTHREADS-SSE3
         which raxmlHPC-SSE3           # prints: [...]/standard-RAxML-8.2.9/which raxmlHPC-SSE3
@@ -157,6 +158,11 @@ The following instructions describe the steps for installing muttree and all its
 
 __And now you can have fun!__
 
+NOTE: If you find problems while using muttree and they seem to be related to the treesub pipeline, you can try re-compiling it. You need to go to the 'treesub-TCG' folder within the muttree installation directory, and re-compile treesub using ANT:
+    
+        cd ~/Software/muttree-1.0/treesub-TCG
+        export ANT_OPTS="-Xmx256m"
+        ant compile jar
 
 ---
 
@@ -165,9 +171,9 @@ __And now you can have fun!__
 
 The pipeline __requires__ the following input:
 
-* __A coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of CDS sequences, where stop codons and trailing bases have been removed (i.e. the last codon of each CDS and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA alignment represents a sample, and must be labeled with the desired sample name. The first sequence in the file will be used as an outgroup sample to root the tree, so this should be the reference sequence or a suitable outgroup sample. An example can be found in the file [examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna).
+* __A coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of CDS sequences, where stop codons and trailing bases have been removed (i.e. the last codon of each CDS and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA alignment represents a sample, and must be labeled with the desired sample name. The first sequence in the file will be used as an outgroup sample to root the tree, so this should be the reference sequence or a suitable outgroup sample. An example can be found in the file [muttree/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been taken from one of treesub's example files).
 
-* __A "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations.
+* __A "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
 * __The full path to the output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the make the pipeline resume the execution after the last successfully completed step.
 
@@ -175,7 +181,7 @@ Muttree also accepts some __optional__ input:
 
 * __Custom options for RAxML (`-r` option).__ This allows personalizing the RAxML routine, which uses rapid bootstrapping followed by maximum likelihood search (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
-* __Custom PAML control file (`-p` option).__ This allows personalizing the PAML `baseml` command settings, which are tuned by default for the analysis of coding sequence alignments (so modifications are not encouraged). The default options are in the file [treesub-TCG/resources/baseml.second.ctl](treesub-TCG/resources/baseml.second.ctl). The custom file cannot include the variables `seqfile`, `treefile` or `outfile`.
+* __Custom PAML control file (`-p` option).__ This allows personalizing the PAML `baseml` command settings, which are tuned by default for the analysis of coding sequence alignments (so modifications are not encouraged). The default options are in the file [muttree/treesub-TCG/resources/baseml.second.ctl](treesub-TCG/resources/baseml.second.ctl). The custom file cannot include the variables `seqfile`, `treefile` or `outfile`.
 
 * __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to speed up the tree construction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
 
@@ -196,26 +202,32 @@ In addition, __running `muttree` without any arguments or with the `-h` option w
 The pipeline is composed of the following steps:
 
  1. __Adapting the input__
+ 
     Treesub is used to adapt the input FASTA alignment to a format that is compatible with the tools employed by the pipeline.
 
  2. __Maximum likelihood tree construction__
+ 
     RAxML is used to build a maximum likelihood (ML) phylogenetic tree from the input alignment. This is by far the most expensive step of the pipeline. By default, rapid bootstrapping (with an extended majority­rule consensus tree stop criterion) is performed prior to the ML tree search, which employs a GTR substitution model plus a Gamma model of rate heterogeneity (`-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options can be specified through the muttree `-r` option. Custom options must be specified between quotes (e.g. `-r "-m GTRGAMMA -# 10 -p 12345"`), and must include all the options required for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
  3. __Rooting the tree__
+ 
     Treesub is used to root the ML tree by the outgroup sequence, which should be the first sequence in the input alignment FASTA file.
 
  4. __Performing ancestral sequence reconstruction__
-    The PAML `baseml` command is used to estimate tree branch lengths and perform ancestral sequence reconstruction. The default baseml options, which are in the file [treesub-TCG/resources/baseml.second.ctl](treesub-TCG/resources/baseml.second.ctl), are tuned for the analysis of coding sequence alignments, so modifications are not encouraged (see the [PAML manual](http://abacus.gene.ucl.ac.uk/software/pamlDOC.pdf)). However, the path to a file with custom options can be specified using the muttree `-p` option. The custom file cannot include the variables `seqfile`, `treefile` or `outfile`.
+ 
+    The PAML `baseml` command is used to estimate tree branch lengths and perform ancestral sequence reconstruction. The default baseml options, which are in the file [muttree/treesub-TCG/resources/baseml.second.ctl](treesub-TCG/resources/baseml.second.ctl), are tuned for the analysis of coding sequence alignments, so modifications are not encouraged (see the [PAML manual](http://abacus.gene.ucl.ac.uk/software/pamlDOC.pdf)). However, the path to a file with custom options can be specified using the muttree `-p` option. The custom file cannot include the variables `seqfile`, `treefile` or `outfile`.
 
  5. __Annotating the tree__
+ 
     Treesub is used to annotate the mutations occurring in each branch of the tree, based their reconstructed ancestral sequence. Mutations are assessed for their amino acid changes.
 
  6. __Identifying recurrent mutations__
+ 
     Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of non-synonymous mutations affecting the same gene are marked as recurrent. A new tree is produced showing only the identified recurrent mutations in its branches.
 
-Each one of the pipeline steps will generate an intermediate folder within the specified output directory, and a log file within the logs folder (also inside the output directory). The logs folder also contains the global pipeline log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution which be resumed in the step that follows the last step recorded in the checkpoint file.
+Each one of the pipeline steps will generate an intermediate folder within the specified output directory, and a log file within the 'logs' folder (also inside the output directory). The 'logs' folder also contains the global pipeline log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution which be resumed in the step that follows the last step recorded in the checkpoint file.
 
-The pipeline's final output will be stored in a folder named Output, and will be consist of:
+The pipeline's final output will be stored in a folder named 'Output', and will be consist of:
 
 * A tab-delimited text file containing the information for all the identified mutations in the tree.
 
