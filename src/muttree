@@ -84,32 +84,18 @@ check_file() {
 
 # PIPELINE STEPS
 # 1) process_seqs()
-# Create input PHYLIP files for RAxML and PAML
+# Uses treesub to create input PHYLIP files for RAxML and PAML
 process_seqs() {
 
     # Create directory for output files
     mkdir -p $OUTDIR/1_process_seqs
 
-    # Get number of sequences and sequence length
-    NSEQ=`wc -l $SEQS | awk '{print $1}'`
-    NSEQ=$(( NSEQ / 2 ))
-    LEN=`head -2 $SEQS | wc -L`
-    
-    # Transform sequences to PHYLIP format, relabelling them for compatibility with treesub
-    rm -f $OUTDIR/1_process_seqs/alignment.names
-    echo "$NSEQ $LEN" > $OUTDIR/1_process_seqs/alignment.raxml.phylip
-    echo "$NSEQ $LEN GC" > $OUTDIR/1_process_seqs/alignment.paml.phylip
-    N=1; IDX=1
-    while read LINE; do
-        if (( N % 2 )); then
-            echo ${LINE#?} >> $OUTDIR/1_process_seqs/alignment.names
-        else
-            echo "seq_$IDX    $LINE" >> $OUTDIR/1_process_seqs/alignment.raxml.phylip
-            echo "seq_$IDX    $LINE" >> $OUTDIR/1_process_seqs/alignment.paml.phylip
-            IDX=$(( IDX + 1 ))
-        fi
-    N=$(( N + 1 ))
-    done < $SEQS
+    # Create a link to the input file, named 'alignment', for compatibility with treesub
+    ln -s $SEQS $OUTDIR/1_process_seqs/alignment
+
+    # Run treesub's FASTAConverter
+    echo -e "\n    Log file in $OUTDIR/logs/1_process_seqs.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.alignment.FASTAConverter $OUTDIR/1_process_seqs &> $OUTDIR/logs/1_process_seqs.log
     
 }
 
@@ -131,11 +117,11 @@ run_raxml() {
     
     # Use custom options if provided
     if [ "$RAXMLOPT" != "no" ]; then
-        echo -e "    Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
+        echo -e "\n    Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
         echo -e "    Log file in $OUTDIR/logs/2_run_raxml.log"
         $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_run_raxml $THREADS $RAXMLOPT &> $OUTDIR/logs/2_run_raxml.log
     else
-        echo -e "    Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
+        echo -e "\n    Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
         echo -e "    Log file in $OUTDIR/logs/2_run_raxml.log"
         $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_run_raxml $THREADS $RAXMLDEF &> $OUTDIR/logs/2_run_raxml.log
     fi
@@ -151,8 +137,8 @@ root_tree() {
     mkdir -p $OUTDIR/3_root_tree
     
     # Run treesub
-    echo -e "    Log file in $OUTDIR/logs/3_root_tree.log"
-    java -Xmx512m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_run_raxml/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted &> $OUTDIR/logs/3_root_tree.log
+    echo -e "\n    Log file in $OUTDIR/logs/3_root_tree.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_run_raxml/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted &> $OUTDIR/logs/3_root_tree.log
 
 }
 
@@ -169,10 +155,10 @@ run_paml() {
     sed -i "s:OUTDIR:$OUTDIR:g" $OUTDIR/4_run_paml/baseml.ctl
     
     if [ "$PAMLCTL" != "no" ]; then
-        echo -e "    Running PAML's baseml using custom control file: $PAMLCTL"
+        echo -e "\n    Running PAML's baseml using custom control file: $PAMLCTL"
         cat $PAMLCTL >> $OUTDIR/4_run_paml/baseml.ctl
     else
-        echo -e "    Running PAML's baseml using default control file: $OUTDIR/4_run_paml/baseml.ctl"
+        echo -e "\n    Running PAML's baseml using default control file: $OUTDIR/4_run_paml/baseml.ctl"
         cat $TREESUB/resources/baseml.second.ctl >> $OUTDIR/4_run_paml/baseml.ctl
     fi
         
@@ -194,8 +180,8 @@ annotate_tree() {
     mkdir -p $OUTDIR/5_annotate_tree
     
     # Run treesub
-    echo -e "    Log file in $OUTDIR/logs/5_annotate_tree.log"
-    java -Xmx512m -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_run_paml $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+    echo -e "\n    Log file in $OUTDIR/logs/5_annotate_tree.log"
+    java -Xmx256m -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_run_paml $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
 
 }
 
@@ -209,7 +195,7 @@ find_recurrent() {
     mkdir -p $OUTDIR/Output
     
     # Run Muttree_findRecurrent.py
-    echo -e "    Log file in $OUTDIR/logs/6_find_recurrent.log"
+    echo -e "\n    Log file in $OUTDIR/logs/6_find_recurrent.log"
     Muttree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/Output &> $OUTDIR/logs/6_find_recurrent.log
 
 }
@@ -381,7 +367,6 @@ if [ "$STEP" -lt 1 ]; then
     process_seqs
     
     # Check successful execution
-    check_file $OUTDIR/1_process_seqs/alignment.names
     check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip
     check_file $OUTDIR/1_process_seqs/alignment.paml.phylip
 
