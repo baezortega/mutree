@@ -8,9 +8,8 @@ muttree
 
 ### A pipeline for phylogenetic tree construction and identification of recurrent mutations
 
-Adrian Baez-Ortega
-
-Transmissible Cancer Group, University of Cambridge
+__Adrian Baez-Ortega  
+Transmissible Cancer Group, University of Cambridge__
 
 Muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of the tools [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1], [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) [2] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [3] and [BioJava](http://biojava.org/) [4]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from nucleotide sequence alignment data.
 
@@ -203,7 +202,7 @@ The pipeline is composed of the following steps:
 
  1. __Adapting the input__
  
-    Treesub is used to adapt the input FASTA alignment to a format that is compatible with the tools employed by the pipeline.
+    The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed by the pipeline.
 
  2. __Maximum likelihood tree construction__
  
