@@ -11,13 +11,14 @@
 # muttree: Core script
 
 # INPUT
-# -i: Input FASTA nucleotide sequence file (one sequence per sample)
-# -g: Gene table as a tab-delimited text file with two columns:
+# -i  Input FASTA nucleotide sequence file (one sequence per sample)
+# -g  Gene table as a tab-delimited text file with two columns:
 #      i)  Gene name
 #      ii) Start position in the input sequence
-# -o: Output folder
+# -o  Output folder
 # -t  Number of RAxML threads (CPUs) [optional]
 # -r  Custom options for RAxML [optional]
+# -a  Custom options for RAxML's ancestral sequence reconstruction [optional]
 
 
 
@@ -33,7 +34,7 @@ ANCESTDEF="-m GTRGAMMA"
 
 # AUXILIARY FUNCTIONS
 # print_help()
-# Prints a help guide if -h, or no arguments, are input
+# Prints a help guide if -h (or no arguments) is specified
 print_help() {
     echo
     echo
@@ -95,14 +96,12 @@ process_seqs() {
     # Transform sequences to PHYLIP format, relabelling them for compatibility with treesub
     rm -f $OUTDIR/1_process_seqs/alignment.names
     echo "$NSEQ $LEN" > $OUTDIR/1_process_seqs/alignment.raxml.phylip
-    #echo "$NSEQ $LEN GC" > $OUTDIR/1_process_seqs/alignment.paml.phylip
     N=1; IDX=1
     while read LINE; do
         if (( N % 2 )); then
             echo ${LINE#?} >> $OUTDIR/1_process_seqs/alignment.names
         else
             echo "seq_$IDX    $LINE" >> $OUTDIR/1_process_seqs/alignment.raxml.phylip
-            #echo "seq_$IDX    $LINE" >> $OUTDIR/1_process_seqs/alignment.paml.phylip
             IDX=$(( IDX + 1 ))
         fi
     N=$(( N + 1 ))
@@ -138,13 +137,15 @@ build_tree() {
         $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $THREADS $RAXMLDEF &> $OUTDIR/logs/2_build_tree.log
     fi
     
-    # Relabel tree with bootstrap support values and put it in the output folder
-    cp $OUTDIR/2_build_tree/RAxML_bootstrap.RECON $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
-    IDX=1
-    while read LINE; do 
-        sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
-        IDX=$(( IDX + 1 ))
-    done < $OUTDIR/1_process_seqs/alignment.names
+    # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
+    if [ -s $OUTDIR/2_build_tree/RAxML_bootstrap.RECON ]; then
+        cp $OUTDIR/2_build_tree/RAxML_bootstrap.RECON $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
+        IDX=1
+        while read LINE; do 
+            sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
+            IDX=$(( IDX + 1 ))
+        done < $OUTDIR/1_process_seqs/alignment.names
+    fi
 
 }
 
@@ -198,25 +199,6 @@ ancestral_seqs() {
         $RAXML -f A -s $FILE -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF &> $OUTDIR/logs/4_ancestral_seqs.log
     fi
     
-#     Copy baseml control file and replace output directory path
-#     cp $TREESUB/resources/baseml.first.ctl $OUTDIR/4_ancestral_seqs/baseml.ctl
-#     sed -i "s:OUTDIR:$OUTDIR:g" $OUTDIR/4_ancestral_seqs/baseml.ctl
-#     
-#     if [ "$PAMLCTL" != "no" ]; then
-#         echo -e "    Running PAML's baseml using custom control file: $PAMLCTL"
-#         cat $PAMLCTL >> $OUTDIR/4_ancestral_seqs/baseml.ctl
-#     else
-#         echo -e "    Running PAML's baseml using default control file: $OUTDIR/4_ancestral_seqs/baseml.ctl"
-#         cat $TREESUB/resources/baseml.second.ctl >> $OUTDIR/4_ancestral_seqs/baseml.ctl
-#     fi
-#         
-#     Run baseml
-#     echo -e "    Log file in $OUTDIR/logs/4_ancestral_seqs.log"
-#     baseml $OUTDIR/4_ancestral_seqs/baseml.ctl &> $OUTDIR/logs/4_ancestral_seqs.log
-#     
-#     Move results to the output folder
-#     mv -t $OUTDIR/4_ancestral_seqs/ $OUTDIR/2base.t $OUTDIR/in.basemlg $OUTDIR/lnf $OUTDIR/rates $OUTDIR/rst $OUTDIR/rst1 $OUTDIR/rub &> /dev/null
-
 }
 
 
@@ -258,7 +240,6 @@ find_recurrent() {
 # Check that dependencies (RAxML, PAML, Java) and muttree are installed
 which raxmlHPC-PTHREADS-SSE3 > /dev/null || { echo -e "\nERROR: raxmlHPC-PTHREADS-SSE3: command not found. Please install raxmlHPC-PTHREADS-SSE3 and add its directory to your PATH.\n" >&2; exit 1; }
 which raxmlHPC-SSE3 > /dev/null || { echo -e "\nERROR: raxmlHPC-SSE3: command not found. Please install raxmlHPC-SSE3 and add its directory to your PATH.\n" >&2; exit 1; }
-#which baseml > /dev/null || { echo -e "\nERROR: baseml: command not found. Please install PAML and add its directory to your PATH.\n" >&2; exit 1; }    
 which java >/dev/null || { echo -e "\nERROR: java: command not found. Please install a Java runtime (1.6+) and add its directory to your PATH.\n" >&2; exit 1; }
 which Muttree_findRecurrent.py >/dev/null || { echo -e "\nERROR: muttree directory not included in the PATH. Please add the muttree/src directory to your PATH environment variable.\n" >&2; exit 1; }
 
@@ -277,7 +258,6 @@ GENES=""
 OUTDIR=""
 RAXMLOPT="no"
 ANCESTOPT="no"
-#PAMLCTL="no"
 CPUS=1
 while getopts ":i:o:g:t:r:a:hv?" OPT; do
   case $OPT in
@@ -299,9 +279,6 @@ while getopts ":i:o:g:t:r:a:hv?" OPT; do
     a)
       ANCESTOPT=$OPTARG
       ;;
-#     p)
-#       PAMLCTL=$OPTARG
-#       ;;
     h)
       print_help
       exit 0
@@ -361,16 +338,6 @@ if [ "$ANCESTOPT" != "no" ] && echo "$ANCESTOPT" | grep -q -E " \-s | \-n | \-w 
     exit 1
 fi
 
-# if  [ "$PAMLCTL" != "no" ] && [ ! -s $PAMLCTL ]; then
-#     echo -e "\nERROR: PAML baseml control file not found or empty. Please check the path.\n" >&2
-#     exit 1
-# fi
-# 
-# if  [ "$PAMLCTL" != "no" ] && grep -q -E "seqfile =|treefile =|outfile =" $PAMLCTL; then 
-#     echo -e "\nERROR: Custom PAML control file cannot include variables seqfile, treefile or outfile.\n" >&2
-#     exit 1
-# fi
-
 if ! [[ $CPUS =~ ^[1-9]+[0-9]*$ ]]; then
     echo -e "\nERROR: Number of CPUs must be greater than 0\n" >&2
     exit 1
@@ -397,7 +364,6 @@ echo "Input sequence FASTA:     $SEQS"
 echo "Input gene table:         $GENES"
 echo "Custom RAXML options:     $RAXMLOPT"
 echo "Custom options for ASR:   $ANCESTOPT"
-#echo "Custom PAML control file: $PAMLCTL"
 echo "Number of CPUs to use:    $CPUS"
 echo "Output directory:         $OUTDIR"
 
@@ -426,7 +392,6 @@ if [ "$STEP" -lt 1 ]; then
     # Check successful execution
     check_file $OUTDIR/1_process_seqs/alignment.names
     check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip
-    #check_file $OUTDIR/1_process_seqs/alignment.paml.phylip
 
     # Update checkpoint file
     echo -e "    Success"
@@ -476,7 +441,6 @@ if [ "$STEP" -lt 4 ]; then
     # Check successful execution
     check_file $OUTDIR/4_ancestral_seqs/RAxML_marginalAncestralStates.ASR
     check_file $OUTDIR/4_ancestral_seqs/RAxML_nodeLabelledRootedTree.ASR
-    #grep -q "List of extant and reconstructed sequences" $OUTDIR/4_ancestral_seqs/rst || { echo -e "\nERROR: Output file $OUTDIR/4_ancestral_seqs/rst is incomplete. Please check the logs folder for more information.\n" >&2; exit 1; }
     
     # Update checkpoint file
     echo -e "    Success"
