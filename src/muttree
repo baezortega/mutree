@@ -211,9 +211,9 @@ annotate_tree() {
     
     # Run treesub
     echo -e "    Log file in $OUTDIR/logs/5_annotate_tree.log"
-    java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+    #java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
     # For very large data sets: reserve 50G of mem (comment line above, uncomment line below)
-    #java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+    java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
 
 }
 
