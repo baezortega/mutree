@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 
-
 #
-# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE RECONSTRUCTION 
-#          AND IDENTIFICATION OF RECURRENT MUTATIONS
+# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE RECONSTRUCTION AND RECURRENT MUTATION DISCOVERY
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
 # 2016
 #
 
-
 # Muttree_findRecurrent.py: Remaps position of output mutations from treesub into position in the input
 #                           gene sequences, using an input 'gene table'. After this, identifies recurrent
 #                           mutations, defined as non-synonymous mutations occurring in a same gene.
-# Last update: 2016/08/22
-
 
 # INPUT
 #   geneTable: tab-delimited text file with two columns: gene name and start position
@@ -152,8 +147,8 @@ with open(outTable, 'w') as out:
 
 # 4. Remap substitutions in treesub tree and generate recurrent mutations tree
 mutTree = treesubDir + '/' + MUTTREENAME
-outTree = outDir + '/Muttree_Substitutions.tree'
-recTree = outDir + '/Muttree_Recurrent_Substitutions.tree'
+outTree = outDir + '/Muttree_Substitutions_All.nexus.tree'
+recTree = outDir + '/Muttree_Substitutions_Recurrent.nexus.tree'
 print 'Remapping mutation positions from tree: ' + mutTree
 print 'Writing remapped tree to: ' + outTree
 print 'Writing recurrent mutations tree to: ' + recTree

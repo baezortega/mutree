@@ -37,15 +37,15 @@ public class ParseRST {
 
     public static void main(String[] args) throws Exception {
         ParseRST p = new ParseRST();
-        p.run(args[0], args[1], args[2]);  // MODIFIED: uses 3 directories (seqs, PAML, output)
+        p.run(args[0], args[1], args[2]);  // MODIFIED: uses 3 directories (seqs, reconstruction, output)
     }
 
-    // MODIFIED: override run function using 3 parameters (seqs, PAML, output directories)
+    // MODIFIED: override run function using 3 parameters (seqs, reconstruction, output directories)
     public void run(String dir1, String dir2, String dir3) throws  Exception{ 
         loadRealNames(dir1 + "/" + Constants.ALIGNMENT_NAMES);
 
-        seqs = getSequences(dir2 + "/" + Constants.PAML_RECONSTRUCTION_FILE);
-        trees = getTrees(dir2 + "/" + Constants.PAML_RECONSTRUCTION_FILE);
+        seqs = getSequences_RAxML(dir1 + "/" + Constants.RAXML_ORIGINAL_SEQS, dir2 + "/" + Constants.RAXML_RECONSTRUCTION_SEQS);
+        trees = getTrees_RAxML(dir2 + "/" + Constants.RAXML_ORIGINAL_TREE, dir2 + "/" + Constants.RAXML_RECONSTRUCTION_TREE);
         traverse(trees[0].getRoot());
 
         writeResults(dir3);
@@ -179,10 +179,13 @@ public class ParseRST {
 
 
     private String getSequenceKey(Node n) {
+        // MODIFIED: now all labels can be obtained from trees[1]
         if (n.isLeaf()) {
-            return trees[0].getExternalNode(n.getNumber()).getIdentifier().getName();
+            return trees[1].getExternalNode(n.getNumber()).getIdentifier().getName();
+            //return trees[0].getExternalNode(n.getNumber()).getIdentifier().getName();
         } else {
-            return "node#" + trees[1].getInternalNode(n.getNumber()).getIdentifier().getName();
+            return trees[1].getInternalNode(n.getNumber()).getIdentifier().getName();
+            //return "node#" + trees[1].getInternalNode(n.getNumber()).getIdentifier().getName();
         }
     }
 
@@ -287,5 +290,84 @@ public class ParseRST {
         reader.close();
 
         return sequences;
+    }
+    
+    
+    // MODIFIED: ADDITIONAL FUNCTIONS TO INTEGRATE RAXML ANCESTRAL SEQUENCE RECONSTRUCTION
+    /***************************************************************************************/
+    
+    private Map<String, List<String>> getSequences_RAxML(String file1, String file2) throws Exception{
+        Map<String, List<String>> sequences = Maps.newHashMap();
+
+        // 1. Read extant (original) sequences
+        BufferedReader reader = Files.newReader(new File(file1), Charsets.US_ASCII);
+        reader.readLine(); // Skip header
+
+        // Until we reach the end of the sequences
+        String line;
+        while ((line = reader.readLine()).trim().length() > 0) {
+            List<String> parts = Lists.newArrayList(line.split("\\s+"));
+
+            String key, seq;
+            key = parts.get(0);  // tip node name
+            seq = parts.get(1);  // extant sequence
+
+            List<String> sequence = Lists.newArrayList();
+            for (int i = 0; i < seq.length(); i += Constants.CODON_LENGTH) {
+                sequence.add(seq.substring(i, i + Constants.CODON_LENGTH));
+            }
+            sequences.put(key, sequence);
+        }
+    
+        reader.close();
+        
+        
+        // 2. Read ancestral (reconstructed) sequences
+        reader = Files.newReader(new File(file2), Charsets.US_ASCII);
+
+        // Until we reach the end of the sequences
+        while ((line = reader.readLine()).trim().length() > 0) {
+            List<String> parts = Lists.newArrayList(line.split("\\s+"));
+
+            String key, seq;
+            key = parts.get(0);  // ancestral node name
+            seq = parts.get(1);  // ancestral sequence
+
+            List<String> sequence = Lists.newArrayList();
+            for (int i = 0; i < seq.length(); i += Constants.CODON_LENGTH) {
+                sequence.add(seq.substring(i, i + Constants.CODON_LENGTH));
+            }
+            sequences.put(key, sequence);
+        }
+    
+        reader.close();
+        
+        return sequences;
+    }
+    
+    
+    private Tree[] getTrees_RAxML(String file1, String file2) throws Exception {
+        Tree[] trees = new Tree[2];
+
+        // 1. Read original ROOTED RAxML tree
+        // This is the true tree - use this to get the true branch lengths
+        BufferedReader reader = Files.newReader(new File(file1), Charsets.US_ASCII);
+        
+        String line = reader.readLine();
+        trees[0] = TreeTool.readTree(new StringReader(line));
+        
+        reader.close();
+        
+        
+        // 2. Read node-labelled RAxML tree
+        // This is the tree with the nodes labeled - use this to get ancestral node names
+        reader = Files.newReader(new File(file2), Charsets.US_ASCII);
+        
+        line = reader.readLine();
+        trees[1] = TreeTool.readTree(new StringReader(line));
+        
+        reader.close();
+
+        return trees;
     }
 }

@@ -18,4 +18,9 @@ public class Constants {
     public static final List<String> FILES_TO_CHECK = Lists.newArrayList("alignment", ALIGNMENT_NAMES, "alignment.raxml.phylip",
             "alignment.paml.phylip", "RAxML_bestTree.RECON", "RAxML_bestTree.RECON.rooted", "pamlout", PAML_RECONSTRUCTION_FILE);
     public static final String OUTGROUP_SEQUENCE_NAME = "seq_1";
+    // MODIFIED: ADDED NEW CONSTANTS
+    public static final String RAXML_ORIGINAL_TREE = "RAxML_bestTree.RECON";
+    public static final String RAXML_RECONSTRUCTION_TREE = "RAxML_nodeLabelledRootedTree.RST";
+    public static final String RAXML_ORIGINAL_SEQS = "alignment.raxml.phylip";
+    public static final String RAXML_RECONSTRUCTION_SEQS = "RAxML_marginalAncestralStates.RST";
 }
