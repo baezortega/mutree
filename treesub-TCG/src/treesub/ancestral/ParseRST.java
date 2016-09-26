@@ -305,7 +305,7 @@ public class ParseRST {
 
         // Until we reach the end of the sequences
         String line;
-        while ((line = reader.readLine()).trim().length() > 0) {
+        while ((line = reader.readLine()) != null) {
             List<String> parts = Lists.newArrayList(line.split("\\s+"));
 
             String key, seq;
@@ -326,7 +326,7 @@ public class ParseRST {
         reader = Files.newReader(new File(file2), Charsets.US_ASCII);
 
         // Until we reach the end of the sequences
-        while ((line = reader.readLine()).trim().length() > 0) {
+        while ((line = reader.readLine()) != null) {
             List<String> parts = Lists.newArrayList(line.split("\\s+"));
 
             String key, seq;
