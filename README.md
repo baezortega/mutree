@@ -19,7 +19,7 @@ The pipeline generates:
 
 * A rooted version of the ML tree showing all the annotated mutations in the branches where they occur (Nexus format).
 
-* A rooted version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format). A nonsynonymous mutation in a branch of the tree is considered to be recurrent if another nonsynonymous mutation in the same gene is found in a different branch.
+* A rooted version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format). A nonsynonymous mutation in a branch of the tree is considered to be recurrent if another nonsynonymous mutation in the same gene has been found in a different branch.
 
 * A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are nonsynonymous and recurrent. 
 
