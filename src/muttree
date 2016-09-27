@@ -138,8 +138,8 @@ build_tree() {
     fi
     
     # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
-    if [ -s $OUTDIR/2_build_tree/RAxML_bootstrap.RECON ]; then
-        cp $OUTDIR/2_build_tree/RAxML_bootstrap.RECON $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
+    if [ -s $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON ]; then
+        cp $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
         IDX=1
         while read LINE; do 
             sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
@@ -183,11 +183,11 @@ ancestral_seqs() {
     rm -f $OUTDIR/4_ancestral_seqs/*.ASR
         if [ "$ANCESTOPT" != "no" ]; then
         echo -e "Running $RAXML with $CPUS CPU(s) and custom options: -f A $ANCESTOPT"
-        echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below"
+        echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
         $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
     else
         echo -e "Running $RAXML with $CPUS CPU(s) and default options: -f A $ANCESTDEF"
-        echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below"
+        echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
         $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
     fi
     
@@ -346,7 +346,8 @@ fi
 # START RUNNING
 # Copy all standard out and standard error to log file
 mkdir -p $OUTDIR/logs
-exec &> >(tee -ia $OUTDIR/logs/muttree_`date +"%y%m%d%H%M"`.log)
+LOGNAME=$OUTDIR/logs/muttree_`date +"%y%m%d%H%M"`.log
+exec &> >(tee -ia $LOGNAME)
 
 echo -e "\nThis is muttree $VERSION\n"
 
@@ -356,7 +357,9 @@ echo "Custom RAXML options:     $RAXMLOPT"
 echo "Custom options for ASR:   $ANCESTOPT"
 echo "Number of CPUs to use:    $CPUS"
 echo "Output directory:         $OUTDIR"
+echo -e "\nLogging full execution in file: $LOGNAME\n"
 
+echo -e "\nExecution started on `date`\n"
 
 # Check if there is a checkpoint file from a previous run in the output folder
 STEP=0
@@ -365,11 +368,9 @@ if [ -s $OUTDIR/logs/CHECKPOINT ]; then
     STEP=`echo $CHK | cut -f1 -d" "`
     STEPNAME=`echo $CHK | cut -f2 -d" "`
     echo -e "\n*CHECKPOINT FILE FOUND*"
-    echo "Resuming execution after last completed step: $STEPNAME"
+    echo "Resuming execution after last completed step: $STEPNAME\n"
 fi
 
-
-echo -e "\nExecution started on `date`\n"
 
 
 # Each step is performed only if its index is higher than STEP (last finished step index)
@@ -384,7 +385,7 @@ if [ "$STEP" -lt 1 ]; then
     check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip
 
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "SUCCESS"
     echo "1 process_seqs" >> $OUTDIR/logs/CHECKPOINT
     
 fi
@@ -400,7 +401,7 @@ if [ "$STEP" -lt 2 ]; then
     check_file $OUTDIR/2_build_tree/RAxML_bestTree.RECON
     
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "\nSUCCESS"
     echo "2 build_tree" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -416,7 +417,7 @@ if [ "$STEP" -lt 3 ]; then
     check_file $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
     
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "\nSUCCESS"
     echo "3 root_tree" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -433,7 +434,7 @@ if [ "$STEP" -lt 4 ]; then
     check_file $OUTDIR/4_ancestral_seqs/RAxML_nodeLabelledRootedTree.ASR
     
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "\nSUCCESS"
     echo "4 ancestral_seqs" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -450,7 +451,7 @@ if [ "$STEP" -lt 5 ]; then
     check_file $OUTDIR/5_annotate_tree/substitutions.tsv
     
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "\nSUCCESS"
     echo "5 annotate_tree" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -468,7 +469,7 @@ if [ "$STEP" -lt 6 ]; then
     check_file $OUTDIR/Output/Muttree_Substitutions_Recurrent.nexus.tree
     
     # Update checkpoint file
-    echo -e "\nSuccess"
+    echo -e "\nSUCCESS"
     echo "6 find_recurrent" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -476,6 +477,6 @@ fi
 
 echo -e "\n\nExecution finished on `date`"
 
-echo -e "\nALL DONE!"
-echo -e "Output is in: $OUTDIR/Output\n"
+echo -e "\n\nALL DONE!"
+echo -e "Output files in: $OUTDIR/Output\n\n"
 
