@@ -15,13 +15,13 @@ Muttree is a generalization and extension of [Asif Tamuri's treesub](https://git
 
 The pipeline generates:
 
-* A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are non-synonymous and recurrent.
-
 * A maximum likelihood phylogenetic tree including bootstrap values in its branches (Newick format).
 
 * A version of the ML tree showing all the annotated mutations in the branches where they occur (Nexus format).
 
-* A version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format).
+* A version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format). A nonsynonymous mutation in a branch of the tree is considered to be recurrent if another nonsynonymous mutation in the same gene is found in a different branch.
+
+* A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are nonsynonymous and recurrent. 
 
 Muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
 
@@ -127,11 +127,11 @@ __NOTE__: If you encounter problems while using muttree and they seem to be rela
 
 The pipeline __requires__ the following input:
 
-* __A coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of CDS sequences, where stop codons and trailing bases have been removed (i.e. the last codon of each CDS and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA alignment represents a sample, and must be labeled with the desired sample name. The first sequence in the file will be used as an outgroup sample to root the tree, so this should be the reference sequence or a suitable outgroup sample. An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been taken from one of treesub's example files). __*Always specify absolute paths to the input files and directories.*__
+* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, with all stop codons and trailing bases removed (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA alignment represents a sample, and must be labeled with a unique sample name. __Sample names cannot contain any parentheses, square brackets, commas or colons. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
 
-* __A "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example). __*Always specify absolute paths to the input files and directories.*__
+* __*Absolute path* to a "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
-* __The full path to the output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the make the pipeline resume the execution after the last successfully completed step. __*Always specify absolute paths to the input files and directories.*__
+* __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the make the pipeline resume the execution after the last successfully completed step.
 
 Muttree also accepts some __optional__ input:
 
@@ -146,11 +146,13 @@ Following from this, the muttree command should look similar to the example belo
 
     muttree -i /path/to/alignment.fna -o /path/to/out_dir -g /path/to/gene_table.txt -t 8 -r "-m GTRGAMMA -# 10 -p 12345" -a "-m GTRGAMMA --HKY85 -M"
 
-Most users should not need to use options `-r` and `-a`. The example input files can be used for a quick test run:
+Most users should not need to use options `-r` and `-a`. The example input files can be used for a quick test run (without bootstrapping):
 
     muttree -i /path/to/muttree-1.0/examples/Alignment_H3HASO.fna -g /path/to/muttree-1.0/examples/GeneTable_H3HASO.txt -o /path/to/out_dir -r "-m GTRGAMMA -p 12345"
 
-In addition, __running `muttree` without any arguments or with the `-h` option will print the help information__, whereas the `-v` option will only print the program version.
+(Because the sequences in this arbitrary example have a high mutation density, there will be more than one nonsynonymous substitution in every gene, and therefore all the nonsynonymous substitutions will appear as recurrent. However, it is useful as a model of how muttree's input and output should look like.)
+
+In addition, __running `muttree` without any arguments or with the `-h` option will print the help information__, whereas the `-v` option will print the program version.
 
 
 ---
@@ -182,7 +184,7 @@ The pipeline is composed of the following steps:
 
  6. __Recurrent mutation identification__
  
-    Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of non-synonymous mutations affecting the same gene are marked as recurrent. A new tree is produced showing only the identified recurrent mutations in its branches.
+    Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced showing only the identified recurrent mutations in its branches.
 
 Each one of the pipeline steps will generate an intermediate folder within the specified output directory, and a log file within the 'logs' folder (also inside the output directory). The 'logs' folder also contains the global pipeline log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution which be resumed in the step that follows the last step recorded in the checkpoint file.
 
