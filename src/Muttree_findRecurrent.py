@@ -132,7 +132,7 @@ print 'Writing remapped mutations to: ' + outTable + '\n'
 
 recMutations = []
 with open(outTable, 'w') as out:
-    out.write('branch	gene	site	codon_from	codon_to	aa_from	aa_to	string	non_synonymous	recurrent\n')
+    out.write('branch	gene	site	codon_from	codon_to	aa_from	aa_to	string	nonsynonymous	recurrent\n')
     for line in newLines:
         # If mutation is non-syn and gene is in list of recurrent genes: output as recurrent
         if line[8] == 'Y' and line[1] in recGenes:
