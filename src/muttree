@@ -173,13 +173,6 @@ ancestral_seqs() {
     # Create a one-line version of the rooted tree
     tr -d '\n' < $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted > $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted
     
-    # Use reduced alignment file if present
-    if [ -s $1 $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced ]; then
-        FILE=$OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced
-    else
-        FILE=$OUTDIR/1_process_seqs/alignment.raxml.phylip
-    fi
-    
     # Run RAxML
     if [ $CPUS -gt 1 ]; then
         THREADS="-T $CPUS"
@@ -191,11 +184,11 @@ ancestral_seqs() {
         if [ "$ANCESTOPT" != "no" ]; then
         echo -e "Running $RAXML with $CPUS CPU(s) and custom options: -f A $ANCESTOPT"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below"
-        $RAXML -f A -s $FILE -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
     else
         echo -e "Running $RAXML with $CPUS CPU(s) and default options: -f A $ANCESTDEF"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below"
-        $RAXML -f A -s $FILE -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
     fi
     
 }
@@ -209,9 +202,9 @@ annotate_tree() {
     mkdir -p $OUTDIR/5_annotate_tree
     
     # Run treesub
-    java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+    java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
     # For very large data sets: reserve 50G of mem (comment line above, uncomment line below)
-    #java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree &> $OUTDIR/logs/5_annotate_tree.log
+    #java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
 
 }
 
@@ -225,7 +218,7 @@ find_recurrent() {
     mkdir -p $OUTDIR/Output
     
     # Run Muttree_findRecurrent.py
-    Muttree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/Output &> $OUTDIR/logs/6_find_recurrent.log
+    Muttree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/Output
 
 }
 
