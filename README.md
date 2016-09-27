@@ -135,7 +135,7 @@ The pipeline __requires__ the following input:
 
 Muttree also accepts some __optional__ input:
 
-* __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to speed up the tree construction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
+* __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to substantially speed up the tree construction and the ancestral sequence reconstruction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
 
 * __Custom RAxML options for tree construction (`-r` option).__ This allows personalizing the RAxML routine, which uses rapid bootstrapping followed by maximum likelihood search by default (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
@@ -186,19 +186,19 @@ The pipeline is composed of the following steps:
  
     Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced showing only the identified recurrent mutations in its branches.
 
-Each one of the pipeline steps will generate an intermediate folder within the specified output directory, and a log file within the 'logs' folder (also inside the output directory). The 'logs' folder also contains the global pipeline log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution which be resumed in the step that follows the last step recorded in the checkpoint file.
+Each one of the pipeline steps will generate an intermediate folder within the specified output directory. The 'logs' folder contains the global execution log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution will be resumed in the step that follows the last step recorded in the checkpoint file.
 
-The pipeline's final output will be stored in a folder named 'Output', and will be consist of:
+The pipeline's final output will be stored in a folder named 'Output', and will consist of:
 
 * A tab-delimited text file containing the information for all the identified mutations in the tree.
 
 * Three versions of the same phylogenetic tree:
 
-    - One version showing bootstrap support values in its branch bifurcations (unrooted tree in Newick format).
+    - One version showing the bootstrap support values in its branch bifurcations (unrooted tree in Newick format; only if bootstrapping is performed).
 
-    - One version showing all the identified mutations occurring in each branch (Nexus format).
+    - One version showing all the mutations identified in each branch (Nexus format).
     
-    - One version showing the identified recurrent mutations occurring in each branch (Nexus format).
+    - One version showing the recurrent mutations identified in each branch (Nexus format).
 
 
 
@@ -210,7 +210,7 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 Copyright © 2016 Transmissible Cancer Group, University of Cambridge  
 Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
 
-Muttree is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
