@@ -11,7 +11,7 @@ muttree
 __Adrian Baez-Ortega  
 Transmissible Cancer Group, University of Cambridge__
 
-Muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [2] and [BioJava](http://biojava.org/) [3]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from a coding DNA sequence alignment.
+muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [2] and [BioJava](http://biojava.org/) [3]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from a coding DNA sequence alignment.
 
 The pipeline generates:
 
@@ -23,7 +23,7 @@ The pipeline generates:
 
 * A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are nonsynonymous and recurrent. 
 
-Muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
+muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
 
 
 ---
@@ -31,17 +31,17 @@ Muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well i
 
 ## Installation
 
-Muttree depends on the installation of the following software:
+muttree depends on the installation of the following software:
 
-* [__RAxML__](http://sco.h-its.org/exelixis/web/software/raxml/index.html). Muttree requires compiling the `raxmlHPC-SSE3` and `raxmlHPC-PTHREADS-SSE3` RAxML executables, which should work well in processors up to 5 years old.
+* [__RAxML__](http://sco.h-its.org/exelixis/web/software/raxml/index.html). muttree requires compiling the `raxmlHPC-SSE3` and `raxmlHPC-PTHREADS-SSE3` RAxML executables, which should work well in processors up to 5 years old.
 
 * A recent [__Java__](https://www.java.com) runtime (1.6+) (which may be already installed in your system).
 
 * Although it is not required in order to run the pipeline, some visualisation tool is needed to open the output tree files. [__FigTree__](http://tree.bio.ed.ac.uk/software/figtree) can read the Nexus format in which the substitution trees are output. The tree showing the bootstrap support values (in Newick format) can be opened using e.g. [__Dendroscope__](http://dendroscope.org/), or converted to a different format.
 
-Muttree already includes its own (slightly customized) version of the treesub pipeline, named 'treesub-TCG'. Therefore, installing treesub is not necessary, although in some cases it may have to be re-compiled (see NOTE below).
+muttree already includes its own (slightly customized) version of the treesub pipeline, named 'treesub-TCG'. Therefore, installing treesub is not necessary, although in some cases it may have to be re-compiled (see NOTE below).
 
-The following instructions describe the steps for installing muttree and all its components in an Ubuntu 14.04.4 system; they should be valid for any Ubuntu or Debian Linux distribution. The tools employed have available Mac and Windows versions (please consult their respective websites). Muttree itself has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
+The following instructions describe the steps for installing muttree and all its components in an Ubuntu 14.04.4 system; they should be valid for any Ubuntu or Debian Linux distribution. The tools employed have available Mac and Windows versions (please consult their respective websites). muttree itself has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
 
  1. __Install RAxML__
 
@@ -127,13 +127,13 @@ __NOTE__: If you encounter problems while using muttree and they seem to be rela
 
 The pipeline __requires__ the following input:
 
-* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, with all stop codons and trailing bases removed (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA alignment represents a sample, and must be labeled with a unique sample name. __Sample names cannot contain any parentheses, square brackets, commas or colons. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
+* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with all stop codons and trailing bases removed__ (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). There can be no positions in the alignment that contain only undetermined characters ('N') in all the sequences. Each sequence in the FASTA file represents a sample, and must be labeled with a unique sample name. __Sample names cannot contain any parentheses, square brackets, commas or colons. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
 
 * __*Absolute path* to a "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
 * __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the make the pipeline resume the execution after the last successfully completed step.
 
-Muttree also accepts some __optional__ input:
+muttree also accepts some __optional__ input:
 
 * __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to substantially speed up the tree construction and the ancestral sequence reconstruction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
 
