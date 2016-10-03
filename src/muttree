@@ -94,6 +94,7 @@ process_seqs() {
     LEN=`head -2 $SEQS | wc -L`
     
     # Transform sequences to PHYLIP format, relabelling them for compatibility with treesub
+    echo "Transforming alignment to PHYLIP format"
     rm -f $OUTDIR/1_process_seqs/alignment.names
     echo "$NSEQ $LEN" > $OUTDIR/1_process_seqs/alignment.raxml.phylip
     N=1; IDX=1
@@ -107,6 +108,18 @@ process_seqs() {
     N=$(( N + 1 ))
     done < $SEQS
     
+    # Reduce alignment by removing undetermined columns
+    echo "Reducing alignment with RAxML (removing completely undetermined sites)"
+    echo "Running $RAXML with $CPUS CPU(s) and options: -f c -m GTRGAMMA --print-identical-sequences"
+    echo -e "More info in file $OUTDIR/1_process_seqs/RAxML_info.REDUC and in the log below\n"
+    rm -f $OUTDIR/1_process_seqs/*.REDUC
+    $RAXML -f c -m GTRGAMMA -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n REDUC -w $OUTDIR/1_process_seqs --print-identical-sequences $THREADS
+    
+    # If there is no reduced file: link to original file
+    if [ ! -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced ]; then
+        ln -s $OUTDIR/1_process_seqs/alignment.raxml.phylip $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced
+    fi
+
 }
 
 
@@ -118,23 +131,16 @@ build_tree() {
     mkdir -p $OUTDIR/2_build_tree
     mkdir -p $OUTDIR/Output
     
-    # Include parameter -T depending on number of CPUs
-    if [ $CPUS -gt 1 ]; then
-        THREADS="-T $CPUS"
-    else
-        THREADS=""
-    fi
-    
     # Use custom options if provided
     rm -f $OUTDIR/2_build_tree/*.RECON
     if [ "$RAXMLOPT" != "no" ]; then
-        echo -e "Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
+        echo "Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
         echo -e "More info in file $OUTDIR/2_build_tree/RAxML_info.RECON and in the log below\n"
-        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $THREADS $RAXMLOPT
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree $THREADS $RAXMLOPT
     else
-        echo -e "Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
+        echo "Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
         echo -e "More info in file $OUTDIR/2_build_tree/RAxML_info.RECON and in the log below\n"
-        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $THREADS $RAXMLDEF
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree $THREADS $RAXMLDEF
     fi
     
     # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
@@ -173,22 +179,25 @@ ancestral_seqs() {
     # Create a one-line version of the rooted tree
     tr -d '\n' < $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted > $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted
     
-    # Run RAxML
-    if [ $CPUS -gt 1 ]; then
-        THREADS="-T $CPUS"
+    # If there are Ns in the original alignment: create a version with Ns replaced by As
+    if [ ! -h $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced ]; then
+        echo "There are completely undetermined columns in the alignment; these will be replaced by 'A's"
+        sed "s:N:A:g" $OUTDIR/1_process_seqs/alignment.raxml.phylip > $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced
     else
-        THREADS=""
-    fi
+        echo "There are no completely undetermined columns in the alignment"
+        ln -s $OUTDIR/1_process_seqs/alignment.raxml.phylip $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced
+    fi    
     
+    # Run RAxML
     rm -f $OUTDIR/4_ancestral_seqs/*.ASR
-        if [ "$ANCESTOPT" != "no" ]; then
+    if [ "$ANCESTOPT" != "no" ]; then
         echo -e "Running $RAXML with $CPUS CPU(s) and custom options: -f A $ANCESTOPT"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
-        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
     else
         echo -e "Running $RAXML with $CPUS CPU(s) and default options: -f A $ANCESTDEF"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
-        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
     fi
     
 }
@@ -341,6 +350,13 @@ else
     RAXML="raxmlHPC-SSE3"
 fi
 
+# Use RAxML parameter -T depending on number of CPUs
+if [ $CPUS -gt 1 ]; then
+    THREADS="-T $CPUS"
+else
+    THREADS=""
+fi
+
 
 
 # START RUNNING
@@ -383,6 +399,7 @@ if [ "$STEP" -lt 1 ]; then
     # Check successful execution
     check_file $OUTDIR/1_process_seqs/alignment.names
     check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip
+    check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced
 
     # Update checkpoint file
     echo -e "SUCCESS"
