@@ -127,13 +127,13 @@ __NOTE__: If you encounter problems while using muttree and they seem to be rela
 
 The pipeline __requires__ the following input:
 
-* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with all stop codons and trailing bases removed__ (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). There can be no positions in the alignment that contain only undetermined characters ('N') in all the sequences. Each sequence in the FASTA file represents a sample, and must be labeled with a unique sample name. __Sample names cannot contain any parentheses, square brackets, commas or colons. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
+* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with all stop codons and trailing bases removed__ (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA file represents a sample (taxon), and must be labeled with a unique sample name. __Sample names cannot contain any form of whitespace character, like blanks, tabulators, carriage returns, colons, commas, parentheses or square brackets. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
 
 * __*Absolute path* to a "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
-* __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the make the pipeline resume the execution after the last successfully completed step.
+* __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the execution after the last successfully completed step.
 
-muttree also accepts some __optional__ input:
+muttree also accepts other __optional__ input:
 
 * __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to substantially speed up the tree construction and the ancestral sequence reconstruction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
 
@@ -164,11 +164,11 @@ The pipeline is composed of the following steps:
 
  1. __Input processing__
  
-    The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed.
+    The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version without such sites will be generated as an input for step 2.
 
  2. __Maximum likelihood tree construction__
  
-    RAxML is used to build a maximum likelihood (ML) phylogenetic tree from the input alignment. This is by far the most expensive step of the pipeline. By default, rapid bootstrapping (with an extended majority­rule consensus tree stop criterion) is performed prior to the ML tree search, which employs a GTR substitution model plus a Gamma model of rate heterogeneity (`-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options can be specified through the muttree `-r` option. Custom options must be specified between quotes (e.g. `-r "-m GTRGAMMA -# 10 -p 12345"`), and must include all the options required for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be modified.
+    RAxML is used to build a maximum likelihood (ML) phylogenetic tree from the input alignment. This can be a very expensive process. By default, rapid bootstrapping (with an extended majority­rule consensus tree stop criterion) is performed prior to a thorough ML tree search, which employs a GTR substitution model plus a Gamma model of rate heterogeneity (`-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options can be specified through the muttree `-r` option. Custom options must be specified between quotes (e.g. `-r "-m GTRGAMMA -# 10 -p 12345"`), and must include all the options required for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
  3. __Tree rooting__
  
@@ -176,7 +176,7 @@ The pipeline is composed of the following steps:
 
  4. __Ancestral sequence reconstruction__
  
-    RAxML is used to perform marginal reconstruction of ancestral sequences in the tree, employing a GTR substitution model plus a Gamma model of rate heterogeneity by default (`-f A -m GTRGAMMA` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options for ancestral sequence reconstruction can be specified through the muttree `-a` option. Custom options must be specified between quotes (e.g. `-a "-m GTRGAMMA --HKY85 -M"`), and must include all the options required for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be modified.
+    RAxML is used to perform marginal reconstruction of ancestral sequences from the input alignment and the ML tree. This can be a very expensive process. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version with such sites replaced by 'A' characters in all the sequences will be generated and used as an input. Here, RAxML employs a GTR substitution model plus a Gamma model of rate heterogeneity by default (`-f A -m GTRGAMMA` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options for ancestral sequence reconstruction can be specified through the muttree `-a` option. Custom options must be specified between quotes (e.g. `-a "-m GTRGAMMA --HKY85 -M"`), and must include all the options required for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be used. 
 
  5. __Tree annotation__
  
@@ -184,13 +184,13 @@ The pipeline is composed of the following steps:
 
  6. __Recurrent mutation identification__
  
-    Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced showing only the identified recurrent mutations in its branches.
+    Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced which shows only the identified recurrent mutations in each branch.
 
-Each one of the pipeline steps will generate an intermediate folder within the specified output directory. The 'logs' folder contains the global execution log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution will be resumed in the step that follows the last step recorded in the checkpoint file.
+Each one of the pipeline steps will generate an intermediate folder within the specified output directory. The 'logs' folder contains the global execution log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution will be resumed at the step that follows the last step recorded in the checkpoint file.
 
 The pipeline's final output will be stored in a folder named 'Output', and will consist of:
 
-* A tab-delimited text file containing the information for all the identified mutations in the tree.
+* A tab-delimited text file containing the information for all the identified mutations in the tree (branch, gene, position, codon and amino acid changes, and whether the mutation is nonsynonymous/recurrent).
 
 * Three versions of the same phylogenetic tree:
 
