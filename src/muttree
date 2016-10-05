@@ -136,11 +136,11 @@ build_tree() {
     if [ "$RAXMLOPT" != "no" ]; then
         echo "Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
         echo -e "More info in file $OUTDIR/2_build_tree/RAxML_info.RECON and in the log below\n"
-        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree $THREADS $RAXMLOPT
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $RAXMLOPT $THREADS
     else
         echo "Running $RAXML with $CPUS CPU(s) and default options: $RAXMLDEF"
         echo -e "More info in file $OUTDIR/2_build_tree/RAxML_info.RECON and in the log below\n"
-        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree $THREADS $RAXMLDEF
+        $RAXML -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $RAXMLDEF $THREADS
     fi
     
     # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
@@ -164,6 +164,7 @@ root_tree() {
     mkdir -p $OUTDIR/3_root_tree
     
     # Run treesub
+    echo "Running treesub.tree.TreeRerooter from treesub.jar"
     java -Xmx512m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_build_tree/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
 
 }
@@ -193,11 +194,11 @@ ancestral_seqs() {
     if [ "$ANCESTOPT" != "no" ]; then
         echo -e "Running $RAXML with $CPUS CPU(s) and custom options: -f A $ANCESTOPT"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
-        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTOPT
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs --print-identical-sequences $ANCESTOPT $THREADS
     else
         echo -e "Running $RAXML with $CPUS CPU(s) and default options: -f A $ANCESTDEF"
         echo -e "More info in file $OUTDIR/4_ancestral_seqs/RAxML_info.ASR and in the log below\n"
-        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs $THREADS $ANCESTDEF
+        $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs --print-identical-sequences $ANCESTDEF $THREADS
     fi
     
 }
@@ -211,9 +212,10 @@ annotate_tree() {
     mkdir -p $OUTDIR/5_annotate_tree
     
     # Run treesub
-    java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
+    echo "Running treesub.ancestral.ParseRST from treesub.jar"
+    #java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
     # For very large data sets: reserve 50G of mem (comment line above, uncomment line below)
-    #java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
+    java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
 
 }
 
@@ -375,7 +377,7 @@ echo "Number of CPUs to use:    $CPUS"
 echo "Output directory:         $OUTDIR"
 echo -e "\nLogging full execution in file: $LOGNAME\n"
 
-echo -e "\nExecution started on `date`\n"
+echo -e "\nExecution started on `date`"
 
 # Check if there is a checkpoint file from a previous run in the output folder
 STEP=0
@@ -383,8 +385,8 @@ if [ -s $OUTDIR/logs/CHECKPOINT ]; then
     CHK=`tail -1 $OUTDIR/logs/CHECKPOINT`
     STEP=`echo $CHK | cut -f1 -d" "`
     STEPNAME=`echo $CHK | cut -f2 -d" "`
-    echo -e "\n*CHECKPOINT FILE FOUND*"
-    echo "Resuming execution after last completed step: $STEPNAME\n"
+    echo -e "\n\n*CHECKPOINT FILE FOUND*"
+    echo "Resuming execution after last completed step: $STEPNAME"
 fi
 
 
@@ -393,7 +395,8 @@ fi
 # 1. PROCESS INPUT SEQUENCE FILE
 if [ "$STEP" -lt 1 ]; then
 
-    echo -e "\n\n(1) PROCESSING INPUT SEQUENCE FILE\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(1) PROCESSING INPUT SEQUENCE FILE\n"
     process_seqs
     
     # Check successful execution
@@ -402,7 +405,7 @@ if [ "$STEP" -lt 1 ]; then
     check_file $OUTDIR/1_process_seqs/alignment.raxml.phylip.reduced
 
     # Update checkpoint file
-    echo -e "SUCCESS"
+    echo -e "\nSUCCESS"
     echo "1 process_seqs" >> $OUTDIR/logs/CHECKPOINT
     
 fi
@@ -411,7 +414,8 @@ fi
 # 2. RUN RAXML TO GENERATE A MAXIMUM LIKELIHOOD TREE
 if [ "$STEP" -lt 2 ]; then
 
-    echo -e "\n\n(2) CONSTRUCTING A MAXIMUM LIKELIHOOD TREE\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(2) CONSTRUCTING A MAXIMUM LIKELIHOOD TREE\n"
     build_tree
     
     # Check successful execution
@@ -427,7 +431,8 @@ fi
 # 3. ROOT THE RAXML ML TREE USING THE REFERENCE SEQUENCE
 if [ "$STEP" -lt 3 ]; then
 
-    echo -e "\n\n(3) ROOTING THE MAXIMUM LIKELIHOOD TREE AT THE REFERENCE SEQUENCE\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(3) ROOTING THE MAXIMUM LIKELIHOOD TREE AT THE REFERENCE SEQUENCE\n"
     root_tree
     
     # Check successful execution
@@ -443,7 +448,8 @@ fi
 # 4. RUN RAXML TO PERFORM ANCESTRAL SEQUENCE RECONSTRUCTION
 if [ "$STEP" -lt 4 ]; then
 
-    echo -e "\n\n(4) PERFORMING MARGINAL ANCESTRAL SEQUENCE RECONSTRUCTION\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(4) PERFORMING MARGINAL ANCESTRAL SEQUENCE RECONSTRUCTION\n"
     ancestral_seqs
     
     # Check successful execution
@@ -460,7 +466,8 @@ fi
 # 5. ANNOTATE MUTATIONS IN EACH TREE BRANCH
 if [ "$STEP" -lt 5 ]; then
 
-    echo -e "\n\n(5) ANNOTATING MUTATIONS IN EACH TREE BRANCH\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(5) ANNOTATING MUTATIONS IN EACH TREE BRANCH\n"
     annotate_tree
     
     # Check successful execution
@@ -477,7 +484,8 @@ fi
 # 6. IDENTIFY RECURRENT MUTATIONS
 if [ "$STEP" -lt 6 ]; then
 
-    echo -e "\n\n(6) IDENTIFYING RECURRENT MUTATIONS\n"
+    echo -e "\n\n=======================================================\n\n"
+    echo -e "(6) IDENTIFYING RECURRENT MUTATIONS\n"
     find_recurrent
     
     # Check successful execution
@@ -492,7 +500,8 @@ if [ "$STEP" -lt 6 ]; then
 fi
 
 
-echo -e "\n\nExecution finished on `date`"
+echo -e "\n\n=======================================================\n\n"
+echo -e "Execution finished on `date`"
 
 echo -e "\n\nALL DONE!"
 echo -e "Output files in: $OUTDIR/Output\n\n"
