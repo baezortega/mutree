@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
+
 
 /**
  * @author tamuri@ebi.ac.uk
@@ -305,19 +307,23 @@ public class ParseRST {
 
         // Until we reach the end of the sequences
         String line;
+        List<String> parts, sequence;
+        String key, seq;
         while ((line = reader.readLine()) != null) {
-            List<String> parts = Lists.newArrayList(line.split("\\s+"));
+            parts = Lists.newArrayList(line.split("\\s+"));
 
-            String key, seq;
             key = parts.get(0);  // tip node name
             seq = parts.get(1);  // extant sequence
 
-            List<String> sequence = Lists.newArrayList();
+            sequence = Lists.newArrayList();
             for (int i = 0; i < seq.length(); i += Constants.CODON_LENGTH) {
                 sequence.add(seq.substring(i, i + Constants.CODON_LENGTH));
             }
             sequences.put(key, sequence);
+            
+            System.out.println(key);
         }
+        System.out.println("All extant sequences read");
     
         reader.close();
         
@@ -327,19 +333,21 @@ public class ParseRST {
 
         // Until we reach the end of the sequences
         while ((line = reader.readLine()) != null) {
-            List<String> parts = Lists.newArrayList(line.split("\\s+"));
+            parts = Lists.newArrayList(line.split("\\s+"));
 
-            String key, seq;
             key = parts.get(0);  // ancestral node name
             seq = parts.get(1);  // ancestral sequence
 
-            List<String> sequence = Lists.newArrayList();
+            sequence = Lists.newArrayList();
             for (int i = 0; i < seq.length(); i += Constants.CODON_LENGTH) {
                 sequence.add(seq.substring(i, i + Constants.CODON_LENGTH));
             }
             sequences.put(key, sequence);
+            
+            System.out.println(key);
         }
-    
+        System.out.println("All ancestral sequences read");
+           
         reader.close();
         
         return sequences;
