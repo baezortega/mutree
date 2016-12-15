@@ -145,10 +145,10 @@ build_tree() {
     
     # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
     if [ -s $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON ]; then
-        cp $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
+        cp $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON $OUTDIR/Output/Muttree_MLTree_Bootstrap_Unrooted.newick.tree
         IDX=1
         while read LINE; do 
-            sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_Bootstrap_Unrooted.newick.tree
+            sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_MLTree_Bootstrap_Unrooted.newick.tree
             IDX=$(( IDX + 1 ))
         done < $OUTDIR/1_process_seqs/alignment.names
     fi
@@ -166,6 +166,9 @@ root_tree() {
     # Run treesub
     echo "Running treesub.tree.TreeRerooter from treesub.jar"
     java -Xmx512m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_build_tree/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
+
+    # Copy rooted tree to output folder
+    cp $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted $OUTDIR/Output/Muttree_MLTree_Rooted.newick.tree
 
 }
 
@@ -201,6 +204,9 @@ ancestral_seqs() {
         $RAXML -f A -s $OUTDIR/1_process_seqs/alignment.raxml.phylip.replaced -t $OUTDIR/4_ancestral_seqs/RAxML_bestTree.RECON.rooted -n ASR -w $OUTDIR/4_ancestral_seqs --print-identical-sequences $ANCESTDEF $THREADS
     fi
     
+    # Remove ancestral probabilities to free disk space
+    rm $OUTDIR/4_ancestral_seqs/RAxML_marginalAncestralProbabilities.ASR
+    
 }
 
 
@@ -213,9 +219,9 @@ annotate_tree() {
     
     # Run treesub
     echo "Running treesub.ancestral.ParseRST from treesub.jar"
-    #java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
-    # For very large data sets: reserve 50G of mem (comment line above, uncomment line below)
-    java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
+    java -Xmx5g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
+    # For very large data sets: reserve 50G (or more) of mem (comment line above, uncomment line below)
+    #java -Xmx50g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
 
 }
 
