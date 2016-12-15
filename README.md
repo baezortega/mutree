@@ -192,13 +192,15 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 
 * A tab-delimited text file containing the information for all the identified mutations in the tree (branch, gene, position, codon and amino acid changes, and whether the mutation is nonsynonymous/recurrent).
 
-* Three versions of the same phylogenetic tree:
+* Four versions of the same phylogenetic tree:
 
-    - One version showing the bootstrap support values in its branch bifurcations (unrooted tree in Newick format; only if bootstrapping is performed).
-
-    - One version showing all the mutations identified in each branch (Nexus format).
+    - Standard ML tree as produced by RAxML (Newick format).
     
-    - One version showing the recurrent mutations identified in each branch (Nexus format).
+    - Tree showing the bootstrap support values in its branch bifurcations (Newick format, unrooted; only if bootstrapping is performed).
+
+    - Tree showing all the mutations identified in each branch (Nexus format).
+    
+    - Tree showing the recurrent mutations identified in each branch (Nexus format).
 
 
 
