@@ -8,7 +8,7 @@ public class Constants {
     // TODO: Only handles codon sequences!
     public static final int CODON_LENGTH = 3;
     public static final String PAML_RECONSTRUCTION_FILE = "rst";
-    public static final String ALIGNMENT_NAMES = "alignment.names";
+    public static final String ALIGNMENT_NAMES = "alignment_names";
     public static final String PROPERTIES_FILENAME = "annotator.properties";
     public static final String RAXML_PATH_PROPERTY = "RAXML_PATH";
     public static final String PAML_PATH_PROPERTY = "PAML_PATH";
@@ -21,6 +21,6 @@ public class Constants {
     // MODIFIED: ADDED NEW CONSTANTS
     public static final String RAXML_ORIGINAL_TREE = "RAxML_bestTree.RECON.rooted";
     public static final String RAXML_RECONSTRUCTION_TREE = "RAxML_nodeLabelledRootedTree.ASR";
-    public static final String RAXML_ORIGINAL_SEQS = "alignment.raxml.phylip.replaced";
+    public static final String RAXML_ORIGINAL_SEQS = "alignment_codons.phylip";
     public static final String RAXML_RECONSTRUCTION_SEQS = "RAxML_marginalAncestralStates.ASR";
 }

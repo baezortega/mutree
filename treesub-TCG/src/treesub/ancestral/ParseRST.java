@@ -200,7 +200,7 @@ public class ParseRST {
 
         for (int i = 0; i < childSeq.size(); i++) {
             if (!childSeq.get(i).equals(parentSeq.get(i))) {
-
+                
                 char aaFrom, aaTo;
                 Set<Character> aaFromSet = Utils.getAminoAcidsForCodonTLA(parentSeq.get(i));
                 if (aaFromSet.size() > 1) aaFrom = '*'; else aaFrom = aaFromSet.iterator().next();
@@ -208,7 +208,9 @@ public class ParseRST {
                 Set<Character> aaToSet = Utils.getAminoAcidsForCodonTLA(childSeq.get(i));
                 if (aaToSet.size() > 1) aaTo = '*'; else aaTo = aaToSet.iterator().next();
 
-                Substitution s = new Substitution(i + 1, parentSeq.get(i), childSeq.get(i), aaFrom, aaTo);
+                // MODIFIED: substitution (codon) site is indicated in 0-base
+                //Substitution s = new Substitution(i + 1, parentSeq.get(i), childSeq.get(i), aaFrom, aaTo);
+                Substitution s = new Substitution(i, parentSeq.get(i), childSeq.get(i), aaFrom, aaTo);
                 substitutions.add(s);
 
             }
@@ -321,12 +323,11 @@ public class ParseRST {
             }
             sequences.put(key, sequence);
             
-            System.out.println(key);
+            //System.out.println(key);
         }
         System.out.println("All extant sequences read");
     
         reader.close();
-        
         
         // 2. Read ancestral (reconstructed) sequences
         reader = Files.newReader(new File(file2), Charsets.US_ASCII);
@@ -344,7 +345,7 @@ public class ParseRST {
             }
             sequences.put(key, sequence);
             
-            System.out.println(key);
+            //System.out.println(key);
         }
         System.out.println("All ancestral sequences read");
            
