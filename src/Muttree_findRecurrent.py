@@ -138,14 +138,14 @@ recGenes = [k for k, v in nonSynPerGene.items() if v > 1]
 print 'Recurrent mutations identified in genes: ' + ', '.join(recGenes)
 
 # Write newLines to output file
-print 'Writing remapped mutations to: ' + outTable + '\n'
+print '\nWriting remapped mutations to: ' + outTable + '\n'
 
 recMutations = []
 with open(outTable, 'w') as out:
     out.write('Index	Branch	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
     for line in newLines:
         # If mutation is non-syn and gene is in list of recurrent genes: output as recurrent
-        if line[8] == 'Y' and line[1] in recGenes:
+        if line[9] == 'Y' and line[1] in recGenes:
             recurrent = 'Y'
             recMutations.append(line[7])
         else:
