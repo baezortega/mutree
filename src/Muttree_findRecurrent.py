@@ -113,7 +113,7 @@ with open(mutTable, 'r') as table:
         index = 'M' + str(mutIdx)
         
         # Record gene and index
-        remapped[string] = gene + '_' + index
+        remapped[string] = index
         newLines.append([index, branch, gene, str(newSite), codonFrom, codonTo, aaFrom, aaTo, newString, nonSyn])
         
         # If non-synonymous, update nonSynPerGene
@@ -142,12 +142,12 @@ print 'Writing remapped mutations to: ' + outTable + '\n'
 
 recMutations = []
 with open(outTable, 'w') as out:
-    out.write('Index	Branch	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
+    out.write('Index	Branch/Node	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
     for line in newLines:
         # If mutation is non-syn and gene is in list of recurrent genes: output as recurrent
         if line[9] == 'Y' and line[2] in recGenes:
             recurrent = 'Y'
-            recMutations.append(line[2] + '_' + line[0])
+            recMutations.append(line[0])
         else:
             recurrent = 'N'
         line.append(recurrent)
