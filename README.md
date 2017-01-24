@@ -160,11 +160,11 @@ In addition, __running `muttree` without any arguments or with the `-h` option w
 
 ## Pipeline description
 
-The pipeline is composed of the following steps:
+The pipeline is composed of six steps:
 
  1. __Input processing__
  
-    The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version without such sites will be generated as an input for step 2.
+    The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version without such sites will be generated as an input for step 2. The codons containing variable sites will be concatenated and written to a different file (in which 'N' characters will be replaced by 'A's), which will be used in step 4.
 
  2. __Maximum likelihood tree construction__
  
@@ -176,7 +176,7 @@ The pipeline is composed of the following steps:
 
  4. __Ancestral sequence reconstruction__
  
-    RAxML is used to perform marginal reconstruction of ancestral sequences from the input alignment and the ML tree. This can be a very expensive process. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version with such sites replaced by 'A' characters in all the sequences will be generated and used as an input. Here, RAxML employs a GTR substitution model plus a Gamma model of rate heterogeneity by default (`-f A -m GTRGAMMA` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options for ancestral sequence reconstruction can be specified via muttree's `-a` option. Custom options must be specified between quotes (e.g. `-a "-m GTRGAMMA --HKY85 -M"`), and must include all the options required for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be used. 
+    RAxML is used to perform marginal reconstruction of ancestral sequences from the input alignment and the ML tree. To allow the processing of very long coding sequences, this step runs on the set of codons that contain a mutation in any of the sequences. Here, RAxML employs a GTR substitution model plus a Gamma model of rate heterogeneity by default (`-f A -m GTRGAMMA` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options for ancestral sequence reconstruction can be specified via muttree's `-a` option. Custom options must be specified between quotes (e.g. `-a "-m GTRGAMMA --HKY85 -M"`), and must include all the options required for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be used. 
 
  5. __Tree annotation__
  
@@ -184,7 +184,7 @@ The pipeline is composed of the following steps:
 
  6. __Recurrent mutation identification__
  
-    Finally, the input gene table is used to map each mutation to the gene (CDS) where it occurs, and any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced which shows only the identified recurrent mutations in each branch.
+    Finally, mutated codons' positions are translated into their actual positions in the original sequence, and the input gene table is then used to map each mutation to the gene (CDS) where it occurs. Any group of nonsynonymous mutations affecting the same gene are marked as recurrent. A new tree is produced which shows only the identified recurrent mutations in each branch.
 
 Each one of the pipeline steps will generate an intermediate folder within the specified output directory. The 'logs' folder contains the global execution log, as well as the checkpoint file, which is used to record the current stage of the pipeline and can be modified in order to restart the execution in any given step: when re-running muttree with the same output folder as before, execution will be resumed at the step that follows the last step recorded in the checkpoint file.
 
@@ -194,13 +194,13 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 
 * Four versions of the same phylogenetic tree:
 
-    - Standard ML tree as produced by RAxML (Newick format).
+    - Standard ML tree as produced by RAxML (Newick format, rooted).
     
     - Tree showing the bootstrap support values in its branch bifurcations (Newick format, unrooted; only if bootstrapping is performed).
 
     - Tree showing all the mutations identified in each branch (Nexus format).
     
-    - Tree showing the recurrent mutations identified in each branch (Nexus format).
+    - Tree showing the potentially recurrent mutations identified in each branch (Nexus format).
 
 
 
