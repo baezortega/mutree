@@ -135,19 +135,19 @@ with open(mutTable, 'r') as table:
 # 3. Identify recurrent mutations and write new mutations table
 # Get gene names with >1 non-synonymous mutation
 recGenes = [k for k, v in nonSynPerGene.items() if v > 1]
-print 'Recurrent mutations identified in genes: ' + ', '.join(recGenes)
+print '\nPotentially recurrent mutations identified in ' + str(len(recGenes)) + ' genes'
 
 # Write newLines to output file
-print '\nWriting remapped mutations to: ' + outTable + '\n'
+print 'Writing remapped mutations to: ' + outTable + '\n'
 
 recMutations = []
 with open(outTable, 'w') as out:
     out.write('Index	Branch	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
     for line in newLines:
         # If mutation is non-syn and gene is in list of recurrent genes: output as recurrent
-        if line[9] == 'Y' and line[1] in recGenes:
+        if line[9] == 'Y' and line[2] in recGenes:
             recurrent = 'Y'
-            recMutations.append(line[7])
+            recMutations.append(line[2] + '_' + line[0])
         else:
             recurrent = 'N'
         line.append(recurrent)
