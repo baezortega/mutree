@@ -115,7 +115,7 @@ The following instructions describe the steps for installing muttree and all its
 __And now you can have fun!__
 
 __NOTE__: If you encounter problems while using muttree and they seem to be related to the treesub pipeline, you can try re-compiling it. You need to go to the `treesub-TCG` folder within the muttree installation directory, and re-compile treesub using [Ant](http://ant.apache.org/):
-    
+
         cd ~/Software/muttree-1.0/treesub-TCG
         export ANT_OPTS="-Xmx256m"
         ant compile jar
