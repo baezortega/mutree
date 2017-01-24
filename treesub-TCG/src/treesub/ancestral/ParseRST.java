@@ -124,7 +124,7 @@ public class ParseRST {
 
 
         for (Map.Entry<Node, List<Substitution>> e : nodeSubstitutions.entrySet()) {
-            String name = nodeAttributes.get(e.getKey()).get(Attributes.Key.NUMBER);
+            String name = nodeAttributes.get(e.getKey()).get(Attributes.Key.REALNAME);
             List<Substitution> substitutions = e.getValue();
 
             for (Substitution s : substitutions) {
@@ -150,7 +150,9 @@ public class ParseRST {
         if (node.isLeaf() && names.size() > 0) {
             name = names.get(Integer.parseInt(getSequenceKey(node).split("_")[1]) - 1);
         } else {
-            name = getSequenceKey(node);
+            // MODIFICATION: Change REALNAME of internal nodes (branches)
+            //name = getSequenceKey(node);
+            name = "branch_" + Integer.toString(getBranchNumber(node));
         }
 
         Attributes a = new Attributes(Attributes.Key.REALNAME, name);
