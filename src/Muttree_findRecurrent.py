@@ -81,7 +81,6 @@ remapped = {}       # Remapped coordinates per mutation
 nonSynPerGene = {}  # Number of different non-synonymous mutations per gene
 newLines = []       # Output data
 cnt = 0
-mutIdx = 1
 
 with open(mutTable, 'r') as table:
     # Skip header line
@@ -109,12 +108,9 @@ with open(mutTable, 'r') as table:
         gene = geneNames[i]
         newString = gene + '_' + aaFrom + str(newSite) + aaTo
         
-        # Create mutation index for the tree
-        index = 'M' + str(mutIdx)
-        
         # Record gene and index
-        remapped[string] = index
-        newLines.append([index, branch, gene, str(newSite), codonFrom, codonTo, aaFrom, aaTo, newString, nonSyn])
+        remapped[string] = newString
+        newLines.append([branch, gene, str(newSite), codonFrom, codonTo, aaFrom, aaTo, newString, nonSyn])
         
         # If non-synonymous, update nonSynPerGene
         if nonSyn == 'Y':
@@ -122,9 +118,7 @@ with open(mutTable, 'r') as table:
                 nonSynPerGene[gene] = nonSynPerGene[gene] + 1
             else:
                 nonSynPerGene[gene] = 1
-        
-        mutIdx = mutIdx + 1
-        
+                
     # Sort by mutation position
     #newLines = [x for (y,x) in sorted(zip(sites,newLines))]
     
@@ -142,12 +136,12 @@ print 'Writing remapped mutations to: ' + outTable + '\n'
 
 recMutations = []
 with open(outTable, 'w') as out:
-    out.write('Index	Branch/Node	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
+    out.write('Branch/Node	Gene	Site	Codon_from	Codon_to	AA_from	AA_to	String	Nonsynonymous	Recurrent\n')
     for line in newLines:
         # If mutation is non-syn and gene is in list of recurrent genes: output as recurrent
-        if line[9] == 'Y' and line[2] in recGenes:
+        if line[8] == 'Y' and line[1] in recGenes:
             recurrent = 'Y'
-            recMutations.append(line[0])
+            recMutations.append(line[7])
         else:
             recurrent = 'N'
         line.append(recurrent)
