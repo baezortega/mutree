@@ -117,6 +117,12 @@ public class ParseRST {
         Utils.printNH(new PrintWriter(out), trees[0].getRoot(), nodeAttributes);
         out.write(";\nend;\n");
         out.close();
+        
+        // MODIFIED: Write also Newick tree without attributes (just labels)
+        out = new BufferedWriter(new FileWriter(f + "/substitutions.newick.tree"));
+        Utils.printNH2(new PrintWriter(out), trees[0].getRoot(), nodeAttributes);
+        out.write(";\n");
+        out.close();
 
         // table of substitutions
         BufferedWriter subs_out = new BufferedWriter(new FileWriter(f + "/substitutions.tsv"));

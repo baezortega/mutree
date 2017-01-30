@@ -198,6 +198,8 @@ annotate_tree() {
     echo "Running treesub.ancestral.ParseRST from treesub.jar"
     java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
 
+    # Copy Newick tree with branch labels to output folder
+    cp $OUTDIR/5_annotate_tree/substitutions.newick.tree $OUTDIR/Output/Muttree_MLTree_Rooted_BranchLabels.newick.tree
 }
 
 
@@ -454,6 +456,7 @@ if [ "$STEP" -lt 5 ]; then
     
     # Check successful execution
     check_file $OUTDIR/5_annotate_tree/substitutions.tree
+    check_file $OUTDIR/5_annotate_tree/substitutions.newick.tree
     check_file $OUTDIR/5_annotate_tree/substitutions.tsv
     
     # Update checkpoint file

@@ -180,7 +180,7 @@ The pipeline is composed of six steps:
 
  5. __Tree annotation__
  
-    Treesub is used to annotate the mutations occurring in each branch of the tree, based on the reconstructed ancestral sequences. Mutations are assessed for their amino acid change.
+    Treesub is used to annotate the mutations occurring in each branch of the tree, based on the reconstructed ancestral sequences. Mutations are assessed for their amino acid change. As part of this process, each branch receives a unique label.
 
  6. __Recurrent mutation identification__
  
@@ -197,6 +197,8 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
     - Standard ML tree as produced by RAxML (Newick format, rooted).
     
     - Tree showing the bootstrap support values in its branch bifurcations (Newick format, unrooted; only if bootstrapping is performed).
+    
+    - Tree showing the branch and node labels employed in the output table of mutations.
 
     - Tree showing all the mutations identified in each branch (Nexus format).
     

@@ -116,11 +116,44 @@ public class Utils {
                 // String id = node.getIdentifier().toString();
                 String id = nodeAttributes.get(node).get(Attributes.Key.REALNAME);
                 out.print("'" + id + "'");
-            } else {
+            } else {                
+                /*
                 if (nodeAttributes.get(node).size() > 0) {
                     out.print(nodeAttributes.get(node).toString());
                 }
+                */
+                // MODIFIED: Include node labels also for internal nodes
+                if (nodeAttributes.get(node).size() > 0) {
+                    String id = nodeAttributes.get(node).get(Attributes.Key.REALNAME);
+                    out.print("'" + id + "'" + nodeAttributes.get(node).toString());
+                }
+
             }
+
+            out.print(":");
+            FormattedOutput.getInstance().displayDecimal(out, node.getBranchLength(), 7);
+        }
+    }
+    
+    // MODIFIED VERSION: Ignore all attributes (Newick output)
+    public static void printNH2(PrintWriter out, Node node, Map<Node, Attributes> nodeAttributes) {
+        if (!node.isLeaf()) {
+            out.print("(");
+
+            for (int i = 0; i < node.getChildCount(); i++) {
+                if (i != 0) {
+                    out.print(",");
+                }
+
+                printNH2(out, node.getChild(i), nodeAttributes);
+            }
+
+            out.print(")");
+        }
+
+        if (!node.isRoot()) {
+            String id = nodeAttributes.get(node).get(Attributes.Key.REALNAME);
+            out.print(id);
 
             out.print(":");
             FormattedOutput.getInstance().displayDecimal(out, node.getBranchLength(), 7);
