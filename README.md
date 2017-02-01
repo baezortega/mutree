@@ -1,4 +1,4 @@
-#### Download the latest release: muttree 1.0 ( [zip](../../archive/v1.0.zip) | [tar.gz](../../archive/v1.0.tar.gz) ).
+#### Download the latest release: muttree 2.0 ( [zip](../../archive/v2.0.zip) | [tar.gz](../../archive/v2.0.tar.gz) ).
 
 ---
 
@@ -6,20 +6,20 @@
 muttree
 =======
 
-### A pipeline for phylogenetic tree construction and recurrent mutation discovery
+### A pipeline for phylogenetic tree inference and recurrent mutation discovery
 
 __Adrian Baez-Ortega  
 Transmissible Cancer Group, University of Cambridge__
 
-muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [2] and [BioJava](http://biojava.org/) [3]) in order to construct a phylogenetic tree and identify recurrent mutations in it, from a coding DNA sequence alignment.
+muttree is a generalization and extension of [Asif Tamuri's treesub](https://github.com/tamuri/treesub) pipeline. It makes use of [RAxML](http://sco.h-its.org/exelixis/web/software/raxml/index.html) [1] and parts of treesub itself (which in turns uses the Java libraries [PAL](http://iubio.bio.indiana.edu/soft/molbio/evolve/pal/pal.html) [2] and [BioJava](http://biojava.org/) [3]) in order to infer a phylogenetic tree and identify candidate recurrent coding-affecting mutations in it, from a coding DNA sequence alignment.
 
 The pipeline generates:
 
 * A maximum likelihood phylogenetic tree including bootstrap values in its branches (Newick format).
 
-* A rooted version of the ML tree showing all the annotated mutations in the branches where they occur (Nexus format).
+* A version of the ML tree showing all the annotated mutations in the branches where they occur (Nexus format).
 
-* A rooted version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format). A nonsynonymous mutation in a branch of the tree is considered to be recurrent if another nonsynonymous mutation in the same gene has been found in a different branch.
+* A version of the ML tree showing only the recurrent mutations in the branches where they occur (Nexus format). A nonsynonymous mutation in a branch of the tree is considered to be recurrent if another nonsynonymous mutation in the same gene has been found in a different branch.
 
 * A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are nonsynonymous and recurrent. 
 
@@ -135,9 +135,9 @@ The pipeline __requires__ the following input:
 
 muttree also accepts other __optional__ input:
 
-* __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to substantially speed up the tree construction and the ancestral sequence reconstruction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
+* __Number of RAxML threads (`-t` option).__ This allows using the multi-threaded version of RAxML to substantially speed up the tree inference and the ancestral sequence reconstruction. This value can be any positive integer, and cannot be higher than the available number of processors. The default value is 1.
 
-* __Custom RAxML options for tree construction (`-r` option).__ This allows personalizing the RAxML routine, which uses rapid bootstrapping followed by maximum likelihood search by default (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
+* __Custom RAxML options for tree inference (`-r` option).__ This allows personalizing the RAxML routine, which uses rapid bootstrapping followed by maximum likelihood search by default (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
 * __Custom RAxML options for ancestral sequence reconstruction (`-a` option).__ This allows personalizing the ASR settings, which consist of a GTR substitution model plus a Gamma model of rate heterogeneity by default (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
@@ -166,7 +166,7 @@ The pipeline is composed of six steps:
  
     The input FASTA alignment is transformed to PHYLIP format and the sequences are relabelled so that they are compatible with the tools employed. If the alignment contains sites composed only of undetermined characters ('N's) in all the sequences, a version without such sites will be generated as an input for step 2. The codons containing variable sites will be concatenated and written to a different file (in which 'N' characters will be replaced by 'A's), which will be used in step 4.
 
- 2. __Maximum likelihood tree construction__
+ 2. __Maximum likelihood tree inference__
  
     RAxML is used to build a maximum likelihood (ML) phylogenetic tree from the input alignment. This can be a very expensive process. By default, rapid bootstrapping (with an extended majority­rule consensus tree stop criterion) is performed prior to a thorough ML tree search, which employs a GTR substitution model plus a Gamma model of rate heterogeneity (`-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730` configuration; see the [RAxML manual](http://sco.h-its.org/exelixis/resource/download/NewManual.pdf)). However, custom RAxML options can be specified via muttree's `-r` option. Custom options must be specified between quotes (e.g. `-r "-m GTRGAMMA -# 10 -p 12345"`), and must include all the options required for running RAxML, __except__ for the options `-s`, `-n`, `-w` and `-T`, which cannot be used.
 

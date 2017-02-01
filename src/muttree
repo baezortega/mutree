@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE CONSTRUCTION AND RECURRENT MUTATION DISCOVERY
+# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
@@ -39,7 +39,7 @@ print_help() {
     echo
     echo
     echo "| MUTTREE"
-    echo "| A pipeline for phylogenetic tree construction and recurrent mutation discovery"
+    echo "| A pipeline for phylogenetic tree inference and recurrent mutation discovery"
     echo "| Version $VERSION"
     echo "|"    
     echo "| Required input:"
@@ -52,7 +52,7 @@ print_help() {
     echo "|"
     echo "| Optional input:"
     echo "|    -t  Number of RAxML threads (CPUs)"
-    echo "|    -r  Custom options for RAxML's tree construction (within quotes, all necessary options except -s, -n, -w and -T)"
+    echo "|    -r  Custom options for RAxML's tree inference (within quotes, all necessary options except -s, -n, -w and -T)"
     echo "|    -a  Custom options for RAxML's ancestral sequence reconstruction (same format as -r)"
     echo "|"
     echo "| Options:"
@@ -400,7 +400,7 @@ fi
 if [ "$STEP" -lt 2 ]; then
 
     echo -e "\n\n=======================================================\n\n"
-    echo -e "(2) CONSTRUCTING A MAXIMUM LIKELIHOOD TREE\n"
+    echo -e "(2) INFERRING A MAXIMUM LIKELIHOOD TREE\n"
     build_tree
     
     # Check successful execution
