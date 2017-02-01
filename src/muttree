@@ -22,7 +22,7 @@
 
 
 
-VERSION=1.0
+VERSION=2.0
 SRCDIR="${BASH_SOURCE%/*}"
 TREESUB="${SRCDIR%/*}"/treesub-TCG
 RAXMLDEF="-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730"
