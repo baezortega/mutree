@@ -83,21 +83,21 @@ The following instructions describe the steps for installing muttree and all its
 
  3. __Install muttree__
 
-    Go to the desired installation folder, and download and uncompress muttree:
+    Go to the desired installation folder, and download and uncompress muttree (replace `2.xx` with the latest version):
 
         cd ~/Software
 
-        wget https://github.com/adrianbaezortega/muttree/archive/v1.0.tar.gz
-        tar zxvf v1.0.tar.gz
-        rm v1.0.tar.gz
+        wget https://github.com/adrianbaezortega/muttree/archive/v2.xx.tar.gz
+        tar zxvf v2.xx.tar.gz
+        rm v2.xx.tar.gz
 
     Then, edit your `~/.bashrc` file using:
 
         nano ~/.bashrc
 
-    and append the `muttree-1.0/src` directory at the end of your PATH variable. If the PATH variable was not defined, not its line should look like:
+    and append the `muttree-2.xx/src` directory at the end of your PATH variable. If the PATH variable was not defined, not its line should look like:
 
-        export PATH=~/Software/standard-RAxML-8.2.9:~/Software/muttree-1.0/src:$PATH
+        export PATH=~/Software/standard-RAxML-8.2.9:~/Software/muttree-2.xx/src:$PATH
 
     Then save and close the file (Ctrl-X).
 
@@ -110,13 +110,13 @@ The following instructions describe the steps for installing muttree and all its
         which raxmlHPC-PTHREADS-SSE3  # prints: [...]/standard-RAxML-8.2.9/raxmlHPC-PTHREADS-SSE3
         which raxmlHPC-SSE3           # prints: [...]/standard-RAxML-8.2.9/which raxmlHPC-SSE3
         which java                    # prints: /usr/bin/java
-        which muttree                 # prints: [...]/muttree-1.0/src/muttree
+        which muttree                 # prints: [...]/muttree-2.xx/src/muttree
 
 __And now you can have fun!__
 
 __NOTE__: If you encounter problems while using muttree and they seem to be related to the treesub pipeline, you can try re-compiling it. You need to go to the `treesub-TCG` folder within the muttree installation directory, and re-compile treesub using [Ant](http://ant.apache.org/):
 
-    cd ~/Software/muttree-1.0/treesub-TCG
+    cd ~/Software/muttree-2.xx/treesub-TCG
     export ANT_OPTS="-Xmx256m"
     ant compile jar
 
@@ -127,9 +127,9 @@ __NOTE__: If you encounter problems while using muttree and they seem to be rela
 
 The pipeline __requires__ the following input:
 
-* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with any trailing bases removed__ (i.e. if the CDS length is not a multiple of 3, any bases after the last codon need to be removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA file represents a sample (taxon), and must be labeled with a unique sample name. __Sample names cannot contain any form of whitespace character, like blanks, tabulators, carriage returns, colons, commas, parentheses or square brackets. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
+* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with any trailing bases removed__ (i.e. if the CDS length is not a multiple of 3, any bases after the last codon need to be removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA file represents a sample (taxon), and must be labeled with a unique sample name. __Sample names cannot contain any form of whitespace character, like blanks, tabulators, carriage returns, colons, commas, parentheses or square brackets. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-2.xx/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
 
-* __*Absolute path* to a "gene table" (`-g` option).__ This is mandatory unless the `-f` option is used. The gene table must be a tab-delimited file with no header and two columns: gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
+* __*Absolute path* to a "gene table" (`-g` option).__ This is mandatory unless the `-f` option is used. The gene table must be a tab-delimited file with no header and two columns: gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-2.xx/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
 * __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the execution after the last successfully completed step.
 
@@ -149,7 +149,7 @@ Following from this, the muttree command should look similar to the example belo
 
 Most users should not need to use options `-r` and `-a`. The example input files can be used for a quick test run (without bootstrapping):
 
-    muttree -i /path/to/muttree-1.0/examples/Alignment_H3HASO.fna -g /path/to/muttree-1.0/examples/GeneTable_H3HASO.txt -o /path/to/out_dir -r "-m GTRGAMMA -p 12345"
+    muttree -i /path/to/muttree-2.xx/examples/Alignment_H3HASO.fna -g /path/to/muttree-2.xx/examples/GeneTable_H3HASO.txt -o /path/to/out_dir -r "-m GTRGAMMA -p 12345"
 
 (Because the sequences in this arbitrary example have a high mutation density, there will be more than one nonsynonymous substitution in every gene, and therefore all the nonsynonymous substitutions will appear as recurrent. However, it is useful as a model of how muttree's input and output should look like.)
 
