@@ -1,4 +1,4 @@
-#### Download the latest release: muttree 2.0 ( [zip](../../archive/v2.0.zip) | [tar.gz](../../archive/v2.0.tar.gz) ).
+#### Download the latest release: muttree 2.71 ( [zip](../../archive/v2.71.zip) | [tar.gz](../../archive/v2.71.tar.gz) ).
 
 ---
 
