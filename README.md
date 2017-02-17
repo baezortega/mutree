@@ -127,9 +127,9 @@ __NOTE__: If you encounter problems while using muttree and they seem to be rela
 
 The pipeline __requires__ the following input:
 
-* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with all stop codons and trailing bases removed__ (i.e. the last codon of each CDS, and — if the CDS length is not a multiple of 3 — any trailing bases after the last codon, have been removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA file represents a sample (taxon), and must be labeled with a unique sample name. __Sample names cannot contain any form of whitespace character, like blanks, tabulators, carriage returns, colons, commas, parentheses or square brackets. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
+* __*Absolute path* to a coding sequence (CDS) alignment file, in FASTA format (`-i` option).__ Each sequence in the file should be composed of a concatenation of multiple gene CDS sequences, __with any trailing bases removed__ (i.e. if the CDS length is not a multiple of 3, any bases after the last codon need to be removed before adding the CDS to the concatenated sequence). Each sequence in the FASTA file represents a sample (taxon), and must be labeled with a unique sample name. __Sample names cannot contain any form of whitespace character, like blanks, tabulators, carriage returns, colons, commas, parentheses or square brackets. The first sequence in the file will be used as an outgroup to root the tree, so this should be the reference sequence or a suitable outgroup sample.__ An example can be found in the file [muttree-1.0/examples/Alignment_H3HASO.fna](examples/Alignment_H3HASO.fna) (this has been adapted from one of treesub's example files).
 
-* __*Absolute path* to a "gene table" (`-g` option).__ This is defined as a tab-delimited file with two columns (and no header): gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
+* __*Absolute path* to a "gene table" (`-g` option).__ This is mandatory unless the `-f` option is used. The gene table must be a tab-delimited file with no header and two columns: gene symbol and CDS start position (position of the first nucleotide in the concatenated sequence). This allows mapping each mutation to the gene where it occurs and finding recurrent mutations. An example can be found in the file [muttree-1.0/examples/GeneTable_H3HASO.txt](examples/GeneTable_H3HASO.txt) (the gene symbols and positions have been defined arbitrarily for this example).
 
 * __*Absolute path* to an output directory (`-o` option).__ The directory will be created if necessary. The pipeline implements a checkpoint logging system, so in the event that the execution is interrupted before finishing, re-running muttree with the same output directory will resume the execution after the last successfully completed step.
 
@@ -141,6 +141,7 @@ muttree also accepts other __optional__ input:
 
 * __Custom RAxML options for ancestral sequence reconstruction (`-a` option).__ This allows personalizing the ASR settings, which consist of a GTR substitution model plus a Gamma model of rate heterogeneity by default (see pipeline description below). Custom options must be specified as a single string within quotes, and must include all the required options for running RAxML, __except__ for the options `-f`, `-s`, `-n`, `-w` and `-T`, which cannot be used.
 
+* __Perform tree inference and rooting only (`-f` option).__ If this option is specified, only the first three steps of the pipeline will be run. Thus, in this case, it is not necessary to provide a gene table via `-g`, and there is also no need for the input alignment (`-i`) to be composed of coding sequences (unless the rest of the pipeline is to be run afterwards). This option does not require any arguments.
 
 Following from this, the muttree command should look similar to the example below:
 
@@ -202,7 +203,7 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 
     - Tree showing all the mutations identified in each branch (Nexus format).
     
-    - Tree showing the potentially recurrent mutations identified in each branch (Nexus format).
+    - Tree showing the candidate recurrent mutations identified in each branch (Nexus format).
 
 
 
@@ -211,7 +212,7 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 
 ## License
 
-Copyright © 2016 Transmissible Cancer Group, University of Cambridge  
+Copyright © 2016–2017 Transmissible Cancer Group, University of Cambridge  
 Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
