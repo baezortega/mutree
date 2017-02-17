@@ -151,9 +151,9 @@ Most users should not need to use options `-r` and `-a`. The example input files
 
     muttree -i /path/to/muttree-2.xx/examples/Alignment_H3HASO.fna -g /path/to/muttree-2.xx/examples/GeneTable_H3HASO.txt -o /path/to/out_dir -r "-m GTRGAMMA -p 12345"
 
-(Because the sequences in this arbitrary example have a high mutation density, there will be more than one nonsynonymous substitution in every gene, and therefore all the nonsynonymous substitutions will appear as recurrent. However, it is useful as a model of how muttree's input and output should look like.)
+(Because the sequences in this arbitrary example have a high mutation density, there will be more than one nonsynonymous substitution in every gene, and therefore all the nonsynonymous substitutions will appear as recurrent. However, it is useful as a model of how the input and output should look like.)
 
-__Running `muttree` without any arguments or with the `-h` option will print the usage information__, whereas the `-v` option will print the program version.
+__Running `muttree` without any arguments or with the `-h` option will print the usage information__, and the `-v` option will print the program version only.
 
 
 ---
