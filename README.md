@@ -153,7 +153,7 @@ Most users should not need to use options `-r` and `-a`. The example input files
 
 (Because the sequences in this arbitrary example have a high mutation density, there will be more than one nonsynonymous substitution in every gene, and therefore all the nonsynonymous substitutions will appear as recurrent. However, it is useful as a model of how the input and output should look like.)
 
-__Running `muttree` without any arguments or with the `-h` option will print the usage information__, and the `-v` option will print the program version only.
+__Running `muttree` without any arguments or with the `-h` option will print the usage information__; the `-v` option will print the program version only.
 
 
 ---
@@ -191,9 +191,9 @@ Each one of the pipeline steps will generate an intermediate folder within the s
 
 The pipeline's final output will be stored in a folder named 'Output', and will consist of:
 
-* A tab-delimited text file containing the information for all the identified mutations in the tree (branch, gene, position, codon and amino acid changes, and whether the mutation is nonsynonymous/recurrent).
+* A tab-delimited text file containing the information for all the identified mutations in the tree (branch/node, gene, position, codon and amino acid changes, and whether the mutation is nonsynonymous/recurrent).
 
-* Four versions of the same phylogenetic tree:
+* Five versions of the same phylogenetic tree:
 
     - Standard ML tree as produced by RAxML (Newick format).
     
