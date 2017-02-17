@@ -5,7 +5,7 @@
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
-# 2016
+# 2016-2017
 #
 
 # muttree: Core script
@@ -15,14 +15,16 @@
 # -g  Gene table as a tab-delimited text file with two columns:
 #      i)  Gene name
 #      ii) Start position in the input sequence
+#     (Required unless option -f is used)
 # -o  Output folder
 # -t  Number of RAxML threads (CPUs) [optional]
 # -r  Custom options for RAxML [optional]
 # -a  Custom options for RAxML's ancestral sequence reconstruction [optional]
+# -f  Run only the first 3 steps of the pipeline (tree inference and rooting) [optional]
 
 
 
-VERSION=2.0
+VERSION=2.71
 SRCDIR="${BASH_SOURCE%/*}"
 TREESUB="${SRCDIR%/*}"/treesub-TCG
 RAXMLDEF="-f a -m GTRGAMMA -# autoMRE -x 931078 -p 272730"
@@ -48,6 +50,7 @@ print_help() {
     echo "|    -g  Full path to the gene table, defined as a tab-delimited file with two columns:"
     echo "|          i) Gene symbol"
     echo "|         ii) Start position in the input sequence"
+    echo "|        (Required unless option -f is used)"
     echo "|    -o  Full path to the output folder (it will be created if needed)"
     echo "|"
     echo "| Optional input:"
@@ -56,6 +59,7 @@ print_help() {
     echo "|    -a  Custom options for RAxML's ancestral sequence reconstruction (same format as -r)"
     echo "|"
     echo "| Options:"
+    echo "|    -f  Run only the first 3 steps of the pipeline (tree inference and rooting)"
     echo "|    -h  Print this usage information and exit"
     echo "|    -v  Print version and exit"
     echo "|"
@@ -118,7 +122,7 @@ build_tree() {
     # Use custom options if provided
     rm -f $OUTDIR/2_build_tree/*.RECON
     if [ "$RAXMLOPT" != "no" ]; then
-        echo "Running $RAXML with $CPUS CPU(s) and custom options: $RAXMOLPT"
+        echo "Running $RAXML with $CPUS CPU(s) and custom options: $RAXMLOPT"
         echo -e "More info in file $OUTDIR/2_build_tree/RAxML_info.RECON and in the log below\n"
         $RAXML -s $OUTDIR/1_process_seqs/alignment_seqs.phylip.reduced -n RECON -w $OUTDIR/2_build_tree --print-identical-sequences $RAXMLOPT $THREADS
     else
@@ -153,8 +157,13 @@ root_tree() {
     java -Xmx512m -cp $TREESUB/dist/treesub.jar treesub.tree.TreeRerooter $OUTDIR/2_build_tree/RAxML_bestTree.RECON $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
 
     # Copy rooted tree to output folder
-    echo -e "\nCopying rooted ML tree to the Output folder"
+    echo -e "\nCopying rooted ML tree to the Output folder\n"
     cp $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted $OUTDIR/Output/Muttree_MLTree_Rooted.newick.tree
+    IDX=1
+    while read LINE; do 
+        sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_MLTree_Rooted.newick.tree
+        IDX=$(( IDX + 1 ))
+    done < $OUTDIR/1_process_seqs/alignment_names
 
 }
 
@@ -239,12 +248,13 @@ fi
 
 # Parse input
 SEQS=""
-GENES=""
 OUTDIR=""
+GENES="no"
 RAXMLOPT="no"
 ANCESTOPT="no"
+FIRST3="no"
 CPUS=1
-while getopts ":i:o:g:t:r:a:hv?" OPT; do
+while getopts ":i:o:g:t:r:a:fhv?" OPT; do
   case $OPT in
     i)
       SEQS=$OPTARG
@@ -263,6 +273,9 @@ while getopts ":i:o:g:t:r:a:hv?" OPT; do
       ;;
     a)
       ANCESTOPT=$OPTARG
+      ;;
+    f)
+      FIRST3="yes"
       ;;
     h)
       print_help
@@ -288,7 +301,7 @@ if [ -z "$SEQS" ]; then
    exit 1
 fi
 
-if [ -z "$GENES" ]; then
+if [ "$GENES" == "no" ] && [ "$FIRST3" == "no" ]; then
    print_help
    echo -e "Input gene table file (-g) is required\n" >&2
    exit 1
@@ -308,7 +321,7 @@ if [ ! -s $SEQS ]; then
     exit 1
 fi
 
-if [ ! -s $GENES ]; then
+if [ ! -s $GENES ] && [ "$FIRST3" == "no" ]; then
     echo -e "\nERROR: Gene table file not found or empty. Please check the path.\n" >&2
     exit 1
 fi
@@ -358,6 +371,7 @@ echo "Input gene table:       $GENES"
 echo "Custom RAXML options:   $RAXMLOPT"
 echo "Custom options for ASR: $ANCESTOPT"
 echo "Number of CPUs to use:  $CPUS"
+echo "Tree inference only:    $FIRST3"
 echo "Output directory:       $OUTDIR"
 echo -e "\nLogging full execution in file: $LOGNAME\n"
 
@@ -407,7 +421,7 @@ if [ "$STEP" -lt 2 ]; then
     check_file $OUTDIR/2_build_tree/RAxML_bestTree.RECON
     
     # Update checkpoint file
-    echo -e "\nSUCCESS"
+    echo -e "SUCCESS"
     echo "2 build_tree" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -424,65 +438,70 @@ if [ "$STEP" -lt 3 ]; then
     check_file $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted
     
     # Update checkpoint file
-    echo -e "\nSUCCESS"
+    echo -e "SUCCESS"
     echo "3 root_tree" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
 
-# 4. RUN RAXML TO PERFORM ANCESTRAL SEQUENCE RECONSTRUCTION
-if [ "$STEP" -lt 4 ]; then
+# Unless option -f was specified, go on
+if [ "$FIRST3" == "no" ]; then
 
-    echo -e "\n\n=======================================================\n\n"
-    echo -e "(4) PERFORMING MARGINAL ANCESTRAL SEQUENCE RECONSTRUCTION\n"
-    ancestral_seqs
+    # 4. RUN RAXML TO PERFORM ANCESTRAL SEQUENCE RECONSTRUCTION
+    if [ "$STEP" -lt 4 ]; then
+
+        echo -e "\n\n=======================================================\n\n"
+        echo -e "(4) PERFORMING MARGINAL ANCESTRAL SEQUENCE RECONSTRUCTION\n"
+        ancestral_seqs
     
-    # Check successful execution
-    check_file $OUTDIR/4_ancestral_seqs/RAxML_marginalAncestralStates.ASR
-    check_file $OUTDIR/4_ancestral_seqs/RAxML_nodeLabelledRootedTree.ASR
+        # Check successful execution
+        check_file $OUTDIR/4_ancestral_seqs/RAxML_marginalAncestralStates.ASR
+        check_file $OUTDIR/4_ancestral_seqs/RAxML_nodeLabelledRootedTree.ASR
     
-    # Update checkpoint file
-    echo -e "\nSUCCESS"
-    echo "4 ancestral_seqs" >> $OUTDIR/logs/CHECKPOINT
+        # Update checkpoint file
+        echo -e "SUCCESS"
+        echo "4 ancestral_seqs" >> $OUTDIR/logs/CHECKPOINT
 
-fi
+    fi
 
 
-# 5. ANNOTATE MUTATIONS IN EACH TREE BRANCH
-if [ "$STEP" -lt 5 ]; then
+    # 5. ANNOTATE MUTATIONS IN EACH TREE BRANCH
+    if [ "$STEP" -lt 5 ]; then
 
-    echo -e "\n\n=======================================================\n\n"
-    echo -e "(5) ANNOTATING MUTATIONS IN EACH TREE BRANCH\n"
-    annotate_tree
+        echo -e "\n\n=======================================================\n\n"
+        echo -e "(5) ANNOTATING MUTATIONS IN EACH TREE BRANCH\n"
+        annotate_tree
     
-    # Check successful execution
-    check_file $OUTDIR/5_annotate_tree/substitutions.tree
-    check_file $OUTDIR/5_annotate_tree/substitutions.newick.tree
-    check_file $OUTDIR/5_annotate_tree/substitutions.tsv
+        # Check successful execution
+        check_file $OUTDIR/5_annotate_tree/substitutions.tree
+        check_file $OUTDIR/5_annotate_tree/substitutions.newick.tree
+        check_file $OUTDIR/5_annotate_tree/substitutions.tsv
     
-    # Update checkpoint file
-    echo -e "\nSUCCESS"
-    echo "5 annotate_tree" >> $OUTDIR/logs/CHECKPOINT
+        # Update checkpoint file
+        echo -e "\nSUCCESS"
+        echo "5 annotate_tree" >> $OUTDIR/logs/CHECKPOINT
 
-fi
+    fi
 
 
-# 6. IDENTIFY RECURRENT MUTATIONS
-if [ "$STEP" -lt 6 ]; then
+    # 6. IDENTIFY RECURRENT MUTATIONS
+    if [ "$STEP" -lt 6 ]; then
 
-    echo -e "\n\n=======================================================\n\n"
-    echo -e "(6) IDENTIFYING RECURRENT MUTATIONS\n"
-    find_recurrent
+        echo -e "\n\n=======================================================\n\n"
+        echo -e "(6) IDENTIFYING RECURRENT MUTATIONS\n"
+        find_recurrent
     
-    # Check successful execution
-    check_file $OUTDIR/Output/Muttree_Substitutions.tsv
-    check_file $OUTDIR/Output/Muttree_Substitutions_All.nexus.tree
-    check_file $OUTDIR/Output/Muttree_Substitutions_Recurrent.nexus.tree
+        # Check successful execution
+        check_file $OUTDIR/Output/Muttree_Substitutions.tsv
+        check_file $OUTDIR/Output/Muttree_Substitutions_All.nexus.tree
+        check_file $OUTDIR/Output/Muttree_Substitutions_Recurrent.nexus.tree
     
-    # Update checkpoint file
-    echo -e "\nSUCCESS"
-    echo "6 find_recurrent" >> $OUTDIR/logs/CHECKPOINT
+        # Update checkpoint file
+        echo -e "SUCCESS"
+        echo "6 find_recurrent" >> $OUTDIR/logs/CHECKPOINT
 
+    fi
+    
 fi
 
 
