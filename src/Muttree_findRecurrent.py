@@ -129,7 +129,7 @@ with open(mutTable, 'r') as table:
 # 3. Identify recurrent mutations and write new mutations table
 # Get gene names with >1 non-synonymous mutation
 recGenes = [k for k, v in nonSynPerGene.items() if v > 1]
-print '\nPotentially recurrent mutations identified in ' + str(len(recGenes)) + ' genes'
+print '\nCandidate recurrent mutations identified in ' + str(len(recGenes)) + ' genes'
 
 # Write newLines to output file
 print 'Writing remapped mutations to: ' + outTable + '\n'
