@@ -23,7 +23,7 @@ The pipeline generates:
 
 * A text table with all the single-nucleotide substitutions found in the alignments, indicating whether they are nonsynonymous and recurrent. 
 
-muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It has not been tested on Mac or Windows systems, but it might work with an appropriate Bash shell.
+muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well in any Linux distribution. It should also work well on Mac OS X.
 
 
 ---
@@ -33,9 +33,9 @@ muttree has been tested on an Ubuntu 14.04.4 system, and it should behave well i
 
 muttree depends on the installation of the following software:
 
-* [__RAxML__](http://sco.h-its.org/exelixis/web/software/raxml/index.html). muttree requires compiling the `raxmlHPC-SSE3` and `raxmlHPC-PTHREADS-SSE3` RAxML executables, which should work well in processors up to 5 years old.
+* [__RAxML__](http://sco.h-its.org/exelixis/web/software/raxml/index.html) version 8.2.9 or later. muttree requires compiling the `raxmlHPC-SSE3` and `raxmlHPC-PTHREADS-SSE3` RAxML executables, which should work well in processors up to 5 years old.
 
-* A recent [__Java__](https://www.java.com) runtime (1.6+) (which may be already installed in your system).
+* A recent [__Java__](https://www.java.com) runtime (1.6+), which might be already installed in your system.
 
 * Although it is not required in order to run the pipeline, some visualisation tool is needed to open the output tree files. [__FigTree__](http://tree.bio.ed.ac.uk/software/figtree) can read the Nexus format in which the substitution trees are output. The tree showing the bootstrap support values (in Newick format) can be opened using e.g. [__Dendroscope__](http://dendroscope.org/), or converted to a different format.
 
