@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #
-# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
+# MUTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
 # 2016-2017
 #
 
-# muttree: Core script
+# mutree: Core script
 
 # INPUT
 # -i  Input FASTA nucleotide sequence file (one sequence per sample)
@@ -40,7 +40,7 @@ ANCESTDEF="-m GTRGAMMA"
 print_help() {
     echo
     echo
-    echo "| MUTTREE"
+    echo "| MUTREE"
     echo "| A pipeline for phylogenetic tree inference and recurrent mutation discovery"
     echo "| Version $VERSION"
     echo "|"    
@@ -64,7 +64,7 @@ print_help() {
     echo "|    -v  Print version and exit"
     echo "|"
     echo "| Usage:"
-    echo "|    muttree -i /path/to/seqs.fna -o /path/to/out_dir -g /path/to/gene_table.txt -t 8 -r \"-m GTRGAMMA -# 10 -p 12345\" -a \"-m GTRGAMMA --HKY85 -M\""
+    echo "|    mutree -i /path/to/seqs.fna -o /path/to/out_dir -g /path/to/gene_table.txt -t 8 -r \"-m GTRGAMMA -# 10 -p 12345\" -a \"-m GTRGAMMA --HKY85 -M\""
     echo
     echo
 }
@@ -92,9 +92,9 @@ process_seqs() {
     # Create directory for output files
     mkdir -p $OUTDIR/1_process_seqs
 
-    # Run Muttree_processSeqs.py
+    # Run Mutree_processSeqs.py
     echo -e "Transforming alignment to PHYLIP format and extracting variable codons\n"
-    Muttree_processSeqs.py $SEQS $OUTDIR/1_process_seqs
+    Mutree_processSeqs.py $SEQS $OUTDIR/1_process_seqs
     
     # Reduce alignment by removing undetermined columns
     echo "Reducing alignment with RAxML (removing completely undetermined sites)"
@@ -134,10 +134,10 @@ build_tree() {
     # If bootstrap was performed: relabel bootstrap tree and put it in the output folder
     if [ -s $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON ]; then
         echo -e "\nCopying (unrooted) bootstrap tree to the Output folder"
-        cp $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON $OUTDIR/Output/Muttree_MLTree_Bootstrap_Unrooted.newick.tree
+        cp $OUTDIR/2_build_tree/RAxML_bipartitionsBranchLabels.RECON $OUTDIR/Output/Mutree_MLTree_Bootstrap_Unrooted.newick.tree
         IDX=1
         while read LINE; do 
-            sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_MLTree_Bootstrap_Unrooted.newick.tree
+            sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Mutree_MLTree_Bootstrap_Unrooted.newick.tree
             IDX=$(( IDX + 1 ))
         done < $OUTDIR/1_process_seqs/alignment_names
     fi
@@ -158,10 +158,10 @@ root_tree() {
 
     # Copy rooted tree to output folder
     echo -e "\nCopying rooted ML tree to the Output folder\n"
-    cp $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted $OUTDIR/Output/Muttree_MLTree_Rooted.newick.tree
+    cp $OUTDIR/3_root_tree/RAxML_bestTree.RECON.rooted $OUTDIR/Output/Mutree_MLTree_Rooted.newick.tree
     IDX=1
     while read LINE; do 
-        sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Muttree_MLTree_Rooted.newick.tree
+        sed -i "s#seq_$IDX:#$LINE:#g" $OUTDIR/Output/Mutree_MLTree_Rooted.newick.tree
         IDX=$(( IDX + 1 ))
     done < $OUTDIR/1_process_seqs/alignment_names
 
@@ -209,12 +209,12 @@ annotate_tree() {
     java -Xmx2g -cp $TREESUB/dist/treesub.jar treesub.ancestral.ParseRST $OUTDIR/1_process_seqs $OUTDIR/4_ancestral_seqs $OUTDIR/5_annotate_tree
 
     # Copy Newick tree with branch labels to output folder
-    cp $OUTDIR/5_annotate_tree/substitutions.newick.tree $OUTDIR/Output/Muttree_MLTree_Rooted_BranchLabels.newick.tree
+    cp $OUTDIR/5_annotate_tree/substitutions.newick.tree $OUTDIR/Output/Mutree_MLTree_Rooted_BranchLabels.newick.tree
 }
 
 
 # 6) find_recurrent()
-# Uses Muttree_findRecurrent.py to remap mutation positions to their actual protein coordinates
+# Uses Mutree_findRecurrent.py to remap mutation positions to their actual protein coordinates
 # and identify recurrent mutations
 find_recurrent() {
 
@@ -222,7 +222,7 @@ find_recurrent() {
     mkdir -p $OUTDIR/Output
     
     # Incorporate gene info and detect recurrent mutations
-    Muttree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/1_process_seqs/codon_positions $OUTDIR/Output
+    Mutree_findRecurrent.py $GENES $OUTDIR/5_annotate_tree $OUTDIR/1_process_seqs/codon_positions $OUTDIR/Output
 
 }
 
@@ -231,11 +231,11 @@ find_recurrent() {
 
 
 
-# Check that dependencies (RAxML, PAML, Java) and muttree are installed
+# Check that dependencies (RAxML, PAML, Java) and mutree are installed
 which raxmlHPC-PTHREADS-SSE3 > /dev/null || { echo -e "\nERROR: raxmlHPC-PTHREADS-SSE3: command not found. Please install raxmlHPC-PTHREADS-SSE3 and add its directory to your PATH.\n" >&2; exit 1; }
 which raxmlHPC-SSE3 > /dev/null || { echo -e "\nERROR: raxmlHPC-SSE3: command not found. Please install raxmlHPC-SSE3 and add its directory to your PATH.\n" >&2; exit 1; }
 which java >/dev/null || { echo -e "\nERROR: java: command not found. Please install a Java runtime (1.6+) and add its directory to your PATH.\n" >&2; exit 1; }
-which Muttree_findRecurrent.py >/dev/null || { echo -e "\nERROR: muttree directory not included in the PATH. Please add the muttree/src directory to your PATH environment variable.\n" >&2; exit 1; }
+which Mutree_findRecurrent.py >/dev/null || { echo -e "\nERROR: mutree directory not included in the PATH. Please add the mutree/src directory to your PATH environment variable.\n" >&2; exit 1; }
 
 
 
@@ -282,7 +282,7 @@ while getopts ":i:o:g:t:r:a:fhv?" OPT; do
       exit 0
       ;;
     v)
-      echo "muttree-$VERSION"
+      echo "mutree-$VERSION"
       exit 0
       ;;
     \?)
@@ -361,10 +361,10 @@ fi
 # START RUNNING
 # Copy all standard out and standard error to log file
 mkdir -p $OUTDIR/logs
-LOGNAME=$OUTDIR/logs/muttree_`date +"%y%m%d%H%M"`.log
+LOGNAME=$OUTDIR/logs/mutree_`date +"%y%m%d%H%M"`.log
 exec &> >(tee -ia $LOGNAME)
 
-echo -e "\nThis is muttree $VERSION\n"
+echo -e "\nThis is mutree $VERSION\n"
 
 echo "Input sequence FASTA:   $SEQS"
 echo "Input gene table:       $GENES"
@@ -492,9 +492,9 @@ if [ "$FIRST3" == "no" ]; then
         find_recurrent
     
         # Check successful execution
-        check_file $OUTDIR/Output/Muttree_Substitutions.tsv
-        check_file $OUTDIR/Output/Muttree_Substitutions_All.nexus.tree
-        check_file $OUTDIR/Output/Muttree_Substitutions_Recurrent.nexus.tree
+        check_file $OUTDIR/Output/Mutree_Substitutions.tsv
+        check_file $OUTDIR/Output/Mutree_Substitutions_All.nexus.tree
+        check_file $OUTDIR/Output/Mutree_Substitutions_Recurrent.nexus.tree
     
         # Update checkpoint file
         echo -e "SUCCESS"

@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 #
-# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
+# MUTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
 # 2016
 #
 
-# Muttree_findRecurrent.py: Remaps position of output mutations from treesub into position in the input
-#                           gene sequences, using an input 'gene table'. After this, identifies recurrent
-#                           mutations, defined as non-synonymous mutations occurring in a same gene.
+# Mutree_findRecurrent.py: Remaps position of output mutations from treesub into position in the input
+#                          gene sequences, using an input 'gene table'. After this, identifies recurrent
+#                          mutations, defined as non-synonymous mutations occurring in a same gene.
 
 # INPUT
 #   geneTable: tab-delimited text file with two columns: gene name and start position
@@ -27,29 +27,29 @@ import math
 
 # If not 3 arguments: print help
 if len(sys.argv) != 5:
-    print '\nMuttree_findRecurrent.py: Remaps the position of the output mutations from treesub into'
-    print '                          their position in the input gene CDS sequences, using a \'gene table\'.'
-    print '                          After this, identifies recurrent mutations, defined as non-synonymous'
-    print '                          mutations affecting a same gene in different branches.'
-    print '                   Input: Path to the gene table, defined as a tab-delimited text file with two'
-    print '                            columns: gene name and start position'
-    print '                          Path to the directory where the treesub output (.tsv and .tree files) is'
+    print '\nMutree_findRecurrent.py: Remaps the position of the output mutations from treesub into'
+    print '                         their position in the input gene CDS sequences, using a \'gene table\'.'
+    print '                         After this, identifies recurrent mutations, defined as non-synonymous'
+    print '                         mutations affecting a same gene in different branches.'
+    print '                  Input: Path to the gene table, defined as a tab-delimited text file with two'
+    print '                           columns: gene name and start position'
+    print '                         Path to the directory where the treesub output (.tsv and .tree files) is'
     print '                          Path to file containing the positions of variable codons in the original sequence'
     print '                          Path to output directory'
-    print '                   Usage: Muttree_findRecurrent.py /path/to/gene_table.txt /path/to/in_dir path/to/codon_pos.txt /path/to/out_dir\n'
+    print '                  Usage: Mutree_findRecurrent.py /path/to/gene_table.txt /path/to/in_dir path/to/codon_pos.txt /path/to/out_dir\n'
     sys.exit(0)
 
 
 script, geneTable, treesubDir, positionsFile, outDir = sys.argv
 mutTable = treesubDir + '/substitutions.tsv'
 mutTree = treesubDir + '/substitutions.tree'
-outTable = outDir + '/Muttree_Substitutions.tsv'
-outTree = outDir + '/Muttree_Substitutions_All.nexus.tree'
-recTree = outDir + '/Muttree_Substitutions_Recurrent.nexus.tree'
+outTable = outDir + '/Mutree_Substitutions.tsv'
+outTree = outDir + '/Mutree_Substitutions_All.nexus.tree'
+recTree = outDir + '/Mutree_Substitutions_Recurrent.nexus.tree'
 
 
 # 1. Read gene table and variable codon positions
-print '\nRunning Muttree_findRecurrent.py'
+print '\nRunning Mutree_findRecurrent.py'
 print '\nReading gene table from: ' + geneTable
 
 geneNames = []

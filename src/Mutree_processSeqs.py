@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 #
-# MUTTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
+# MUTREE: A PIPELINE FOR PHYLOGENETIC TREE INFERENCE AND RECURRENT MUTATION DISCOVERY
 #
 # Adrian Baez-Ortega (ab2324@cam.ac.uk)
 # Transmissible Cancer Group, University of Cambridge
 # 2016
 #
 
-# Muttree_processSeqs.py: Transforms the input FASTA file of coding sequences to PHYLIP format, and generates
-#                         a second PHYLIP file including only the codons that vary in any of the sequences,
-#                         as well as a file with the positions of such codons in the original sequence.
+# Mutree_processSeqs.py: Transforms the input FASTA file of coding sequences to PHYLIP format, and generates
+#                        a second PHYLIP file including only the codons that vary in any of the sequences,
+#                        as well as a file with the positions of such codons in the original sequence.
 
 # INPUT
 #   sequenceFile: FASTA file of sequences
@@ -27,20 +27,20 @@ from sets import Set
 
 # If not 2 arguments: print help
 if len(sys.argv) != 3:
-    print '\nMuttree_processSeqs.py: Transforms the input FASTA file of coding sequences to PHYLIP format, renaming'
-    print '                        the sequences for compatibility with the rest of the pipeline.'
-    print '                        Also generates a PHYLIP file including only the codons that vary in any of the'
-    print '                        sequences, and a file with the positions of those codons in the original sequence.'
-    print '                 Input: Path to the FASTA file of sequences'
-    print '                        Path to output directory'
-    print '                 Usage: Muttree_processSeqs.py /path/to/seqs.fasta /path/to/out_dir\n'
+    print '\nMutree_processSeqs.py: Transforms the input FASTA file of coding sequences to PHYLIP format, renaming'
+    print '                       the sequences for compatibility with the rest of the pipeline.'
+    print '                       Also generates a PHYLIP file including only the codons that vary in any of the'
+    print '                       sequences, and a file with the positions of those codons in the original sequence.'
+    print '                Input: Path to the FASTA file of sequences'
+    print '                       Path to output directory'
+    print '                Usage: Mutree_processSeqs.py /path/to/seqs.fasta /path/to/out_dir\n'
     sys.exit(0)
 
 
 script, sequenceFile, outDir = sys.argv
 
 
-print '\nRunning Muttree_processSeqs.py'
+print '\nRunning Mutree_processSeqs.py'
 print '\nInput file:       ' + sequenceFile
 print 'Output directory: ' + outDir
 
