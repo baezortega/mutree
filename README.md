@@ -1,5 +1,5 @@
 #### Download the latest release: mutree 2.7182 ( [zip](../../archive/v2.7182.zip) | [tar.gz](../../archive/v2.7182.tar.gz) ).
-[![DOI](https://zenodo.org/badge/66663116.svg)](https://zenodo.org/badge/latestdoi/66663116)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.583633.svg)](https://doi.org/10.5281/zenodo.583633)
 
 ---
 
