@@ -207,6 +207,14 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
     - Tree showing the candidate recurrent mutations identified in each branch (Nexus format).
 
 
+---
+
+## Citation
+
+Please cite mutree as:
+
+Adrian Baez-Ortega. mutree: A pipeline for phylogenetic tree inference and recurrent mutation discovery. Zenodo (2017). [doi:10.5281/zenodo.583633](https://doi.org/10.5281/zenodo.583633).
+
 
 ---
 
