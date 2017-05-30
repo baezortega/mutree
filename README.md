@@ -1,5 +1,6 @@
 #### Download the latest release: mutree 2.7182 ( [zip](../../archive/v2.7182.zip) | [tar.gz](../../archive/v2.7182.tar.gz) ).
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.583633.svg)](https://doi.org/10.5281/zenodo.583633)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.583634.svg)](https://doi.org/10.5281/zenodo.583634)
+
 
 ---
 
@@ -213,7 +214,7 @@ The pipeline's final output will be stored in a folder named 'Output', and will 
 
 Please cite mutree as:
 
-Adrian Baez-Ortega. mutree: A pipeline for phylogenetic tree inference and recurrent mutation discovery. Zenodo (2017). [doi:10.5281/zenodo.583633](https://doi.org/10.5281/zenodo.583633).
+Adrian Baez-Ortega. mutree: A pipeline for phylogenetic tree inference and recurrent mutation discovery. Zenodo (2017). [doi:10.5281/zenodo.583634](https://doi.org/10.5281/zenodo.583634).
 
 
 ---
