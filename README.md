@@ -8,7 +8,7 @@
 mutree
 =======
 
-### A pipeline for phylogenetic tree inference and recurrent mutation discovery
+### A pipeline for phylogenetic tree inference and mutation recurrence discovery
 
 __Adrian Baez-Ortega  
 Transmissible Cancer Group, University of Cambridge__
